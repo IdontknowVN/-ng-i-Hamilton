@@ -15,7 +15,8 @@ Mô phỏng cây quay lui (Backtracking tree): Tự động tính toán và vẽ
 Hoạt họa Step-by-Step: Mô phỏng từng bước đi của thuật toán chạy đồng thời trên cả đồ thị và cây quay lui.
 
 # Hướng dẫn sử dụng
-Bước 1: Vẽ đồ thị
+## Tải file Hamiltonver2 về, đúp chuột để khởi chạy.
+## Bước 1: Vẽ đồ thị
 Thêm Đỉnh: Chọn chế độ "Thêm đỉnh". Click vào bất kỳ không gian trống nào trên khung vẽ phía trên để tạo một đỉnh mới (tự động đặt tên A, B, C...).
 
 Di chuyển đỉnh: Bạn có thể bấm giữ chuột vào bất kỳ đỉnh nào và rê để thay đổi vị trí.
