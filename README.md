@@ -1,7 +1,9 @@
-                                    🕸️ Mô Phỏng Đồ Thị Hamilton & Cây Quay Lui (Backtracking Tree)
+#🕸️ Mô Phỏng Đồ Thị Hamilton & Cây Quay Lui (Backtracking Tree)
 Một ứng dụng web tương tác trực quan giúp người dùng hiểu rõ về Đồ thị Hamilton và cách Thuật toán Quay lui (Backtracking) hoạt động để tìm kiếm đường đi. Ứng dụng không chỉ hiển thị kết quả mà còn vẽ ra toàn bộ không gian khám phá của máy tính (Cây Quay lui) với hiệu ứng phát sáng (Bloom) đồng bộ.
-
-✨ Tính năng nổi bật
+#Ngôn ngữ
+HTML
+### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
+#✨ Tính năng nổi bật
 Vẽ đồ thị tương tác: Tự do thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý muốn ngay trên Canvas.
 
 Mô phỏng Cây Quay lui (Backtracking Tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
@@ -12,7 +14,7 @@ Hiệu ứng Phát sáng (Bloom Effect): Tự động làm nổi bật các nhá
 
 Neo màu Đỉnh xuất phát: Đỉnh gốc luôn được đánh dấu bằng màu Xanh Lơ (Cyan) để người dùng không bị mất phương hướng khi các đường đi đan chéo phức tạp.
 
-🚀 Hướng dẫn sử dụng
+#🚀 Hướng dẫn sử dụng
 Bước 1: Vẽ Đồ thị
 Thêm Đỉnh: Chọn chế độ ➕ Thêm Đỉnh. Click vào bất kỳ không gian trống nào trên khung vẽ phía trên để tạo một đỉnh mới (tự động đặt tên A, B, C...).
 
@@ -46,18 +48,6 @@ Cạnh & Đỉnh Vàng/Cam (Orange Bloom): Các bước di chuyển hiện tại
 
 Đỉnh Nâu Tối / Xám (Dark Brown): Nút trên Cây biểu diễn một ngõ cụt (Dead-end) hoặc nhánh khám phá thất bại.
 
-🛠️ Công nghệ sử dụng
-HTML5 Canvas: Dựng hình đồ thị và cây.
-
-Vanilla JavaScript (ES6): Xử lý logic tương tác chuột, thuật toán đệ quy quay lui (Backtracking) và tính toán layout cây.
-
-CSS3: Giao diện Dark Mode và hiệu ứng chuyển cảnh.
-
-Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
-
-💡 Phù hợp cho
-Sinh viên ngành Khoa học Máy tính học môn Toán Rời Rạc / Cấu trúc Dữ liệu & Giải thuật.
-
-Giảng viên cần công cụ trực quan để trình bày trên lớp.
-
-Bất kỳ ai yêu thích thuật toán đồ thị!
+#Ngôn ngữ
+HTML
+### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
