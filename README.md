@@ -3,15 +3,16 @@
   
 <img width="861" height="736" alt="Screenshot 2026-04-07 164809" src="https://github.com/user-attachments/assets/0eee96c3-24f3-4662-8dec-d6ffba6ef3cb" />
 
-#Ngôn ngữ
+
+# Ngôn ngữ
 HTML
 ### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
 # Tính năng
-Vẽ đồ thị tương tác: Tự do thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý muốn ngay trên Canvas.
+Vẽ đồ thị tương tác: Thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý trên Canvas.
 
-Mô phỏng Cây quay lui (Backtracking Tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
+Mô phỏng cây quay lui (Backtracking tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
 
-Hoạt họa Step-by-Step: Mô phỏng từng bước đi của thuật toán chạy đồng thời trên cả Đồ thị và Cây Quay lui.
+Hoạt họa Step-by-Step: Mô phỏng từng bước đi của thuật toán chạy đồng thời trên cả đồ thị và cây quay lui.
 
 # Hướng dẫn sử dụng
 Bước 1: Vẽ đồ thị
