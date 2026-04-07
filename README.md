@@ -1,31 +1,28 @@
-# 🕸️ Mô phỏng đồ thị Hamilton
+# Mô phỏng đồ thị Hamilton
 Một ứng dụng web tương tác trực quan giúp người dùng hiểu rõ về Đồ thị Hamilton và cách Thuật toán quay lui (Backtracking) hoạt động để tìm kiếm đường đi. Ứng dụng không chỉ hiển thị kết quả mà còn vẽ ra toàn bộ không gian khám phá của máy tính (Cây quay lui).
 ![image](https://github.com/user-attachments/assets/de5869b4-997b-49e8-bbdc-f79c5d2313fb)
+
 #Ngôn ngữ
 HTML
 ### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
 # Tính năng
 Vẽ đồ thị tương tác: Tự do thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý muốn ngay trên Canvas.
 
-Mô phỏng Cây Quay lui (Backtracking Tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
+Mô phỏng Cây quay lui (Backtracking Tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
 
 Hoạt họa Step-by-Step: Mô phỏng từng bước đi của thuật toán chạy đồng thời trên cả Đồ thị và Cây Quay lui.
 
-Hiệu ứng Phát sáng (Bloom Effect): Tự động làm nổi bật các nhánh đang được duyệt với hiệu ứng đổ bóng rực rỡ mang phong cách Cyberpunk / Neon trên nền màu tự nhiên.
-
-Neo màu Đỉnh xuất phát: Đỉnh gốc luôn được đánh dấu bằng màu Xanh Lơ (Cyan) để người dùng không bị mất phương hướng khi các đường đi đan chéo phức tạp.
-
 # Hướng dẫn sử dụng
 Bước 1: Vẽ Đồ thị
-Thêm Đỉnh: Chọn chế độ ➕ Thêm Đỉnh. Click vào bất kỳ không gian trống nào trên khung vẽ phía trên để tạo một đỉnh mới (tự động đặt tên A, B, C...).
+Thêm Đỉnh: Chọn chế độ "Thêm đỉnh". Click vào bất kỳ không gian trống nào trên khung vẽ phía trên để tạo một đỉnh mới (tự động đặt tên A, B, C...).
 
 Di chuyển Đỉnh: Bạn có thể bấm giữ chuột vào bất kỳ đỉnh nào và rê để thay đổi vị trí.
 
-Thêm Cạnh: Chọn chế độ 🔗 Thêm Cạnh. Click vào đỉnh thứ nhất (đỉnh sẽ chuyển màu vàng), sau đó click vào đỉnh thứ hai để tạo đường nối.
+Thêm Cạnh: Chọn chế độ "Thêm cạnh". Click vào đỉnh thứ nhất (đỉnh sẽ chuyển màu vàng), sau đó click vào đỉnh thứ hai để tạo đường nối.
 
 
 ## Bước 2: Phân tích Thuật toán
-Bấm nút 🔍 Phân Tích & Tạo Cây. Hệ thống sẽ chạy thuật toán Backtracking ngầm để quét qua toàn bộ các đỉnh.
+Bấm nút "Phân tích và tạo cây". Hệ thống sẽ chạy thuật toán Backtracking ngầm để quét qua toàn bộ các đỉnh.
 
 Nếu đồ thị có tồn tại đường đi Hamilton, danh sách các "Đỉnh xuất phát" hợp lệ sẽ hiện ra bên dưới.
 <img width="764" height="752" alt="Screenshot 2026-04-07 160535" src="https://github.com/user-attachments/assets/0e009d06-73f0-4e50-9a77-94600722612d" />
