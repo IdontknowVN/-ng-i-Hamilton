@@ -1,4 +1,4 @@
-<img width="838" height="744" alt="Screenshot 2026-04-07 164256" src="https://github.com/user-attachments/assets/7853f71b-0d77-4094-95fa-bb8968ecdde6" /># Mô phỏng đường đi Hamilton
+# Mô phỏng đường đi Hamilton
   Một web tương tác trực quan giúp người dùng hiểu rõ về đường đi Hamilton và cách thuật toán quay lui (Backtracking) hoạt động để tìm kiếm đường đi.
   
 <img width="861" height="736" alt="Screenshot 2026-04-07 164809" src="https://github.com/user-attachments/assets/0eee96c3-24f3-4662-8dec-d6ffba6ef3cb" />
@@ -41,5 +41,10 @@ Ngay dưới bảng vẽ Cây, bạn sẽ thấy danh sách các con đường c
 Click vào một con đường để xem hoạt ảnh. Thuật toán sẽ chạy từng bước, làm phát sáng đồng bộ cả Đồ thị phía trên và Nhánh cây tương ứng phía dưới.
 
 <img width="833" height="377" alt="Screenshot 2026-04-07 164945" src="https://github.com/user-attachments/assets/5bfea34d-f64e-46e4-9508-5cca9cf30a25" />
+
+Demo
+
+
+https://github.com/user-attachments/assets/160425ad-84a6-4c97-840b-95a4bc5c04d3
 
 
