@@ -1,9 +1,9 @@
-#🕸️ Mô Phỏng Đồ Thị Hamilton & Cây Quay Lui (Backtracking Tree)
+# 🕸️ Mô Phỏng Đồ Thị Hamilton & Cây Quay Lui (Backtracking Tree)
 Một ứng dụng web tương tác trực quan giúp người dùng hiểu rõ về Đồ thị Hamilton và cách Thuật toán Quay lui (Backtracking) hoạt động để tìm kiếm đường đi. Ứng dụng không chỉ hiển thị kết quả mà còn vẽ ra toàn bộ không gian khám phá của máy tính (Cây Quay lui) với hiệu ứng phát sáng (Bloom) đồng bộ.
 #Ngôn ngữ
 HTML
 ### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
-#✨ Tính năng nổi bật
+# Tính năng
 Vẽ đồ thị tương tác: Tự do thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý muốn ngay trên Canvas.
 
 Mô phỏng Cây Quay lui (Backtracking Tree): Tự động tính toán và vẽ ra toàn bộ cấu trúc cây đệ quy, cho thấy rõ các nhánh thành công và các ngõ cụt.
@@ -14,7 +14,7 @@ Hiệu ứng Phát sáng (Bloom Effect): Tự động làm nổi bật các nhá
 
 Neo màu Đỉnh xuất phát: Đỉnh gốc luôn được đánh dấu bằng màu Xanh Lơ (Cyan) để người dùng không bị mất phương hướng khi các đường đi đan chéo phức tạp.
 
-#🚀 Hướng dẫn sử dụng
+# 🚀 Hướng dẫn sử dụng
 Bước 1: Vẽ Đồ thị
 Thêm Đỉnh: Chọn chế độ ➕ Thêm Đỉnh. Click vào bất kỳ không gian trống nào trên khung vẽ phía trên để tạo một đỉnh mới (tự động đặt tên A, B, C...).
 
@@ -37,17 +37,3 @@ Ngay dưới bảng vẽ Cây, bạn sẽ thấy danh sách các con đường c
 
 Click vào một con đường để xem hoạt ảnh. Thuật toán sẽ chạy từng bước, làm phát sáng đồng bộ cả Đồ thị phía trên và Nhánh cây tương ứng phía dưới.
 
-🎨 Chú giải Màu sắc (Legend)
-Để theo dõi thuật toán dễ dàng, ứng dụng sử dụng hệ thống màu sắc có chủ đích:
-
-Đỉnh Xanh Lơ (Cyan): Điểm xuất phát (Start Node). Bắt đầu của đường đi.
-
-Cạnh & Đỉnh Vàng/Cam (Orange Bloom): Các bước di chuyển hiện tại đang được mô phỏng.
-
-Đỉnh Xanh Lá (Green): Nút lá trên Cây biểu diễn một đường đi Hamilton thành công (đã đi qua tất cả các đỉnh).
-
-Đỉnh Nâu Tối / Xám (Dark Brown): Nút trên Cây biểu diễn một ngõ cụt (Dead-end) hoặc nhánh khám phá thất bại.
-
-#Ngôn ngữ
-HTML
-### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
