@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #3d3d55; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { background: #2a2a40; padding: 20px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); max-width: 800px; width: 100%; text-align: center; }
         .controls { margin-bottom: 15px; }
         button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
@@ -15,22 +15,19 @@
         .btn-danger { background-color: #f44336; color: white; }
         .btn-danger:hover { background-color: #d32f2f; }
         
-        canvas { border: 2px solid #555; border-radius: 5px; background-color: #0e0c0c; cursor: crosshair; margin-top: 10px; width: 100%; max-width: 750px; }
-        #treeCanvas { background-color: #12121a; display: none; }
+        canvas { border: 2px solid #555; border-radius: 5px; background-color: #0f101b; cursor: crosshair; margin-top: 10px; width: 100%; max-width: 750px; }
+        #treeCanvas { background-color: #12121a; display: none; cursor: grab; }
         
         #status { margin-top: 15px; font-size: 16px; font-weight: bold; color: #aaa; }
         .instructions { font-size: 13px; color: #bbb; margin-bottom: 10px; }
         
         #nodeOptions { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        .btn-node { background-color: #8D6E63; color: white; } /* Tông màu đất/cây */
+        .btn-node { background-color: #8D6E63; color: white; } 
         .btn-node:hover { background-color: #6D4C41; }
         .btn-node.selected { background-color: #5D4037; box-shadow: 0 0 15px #8D6E63; border: 2px solid #fff; }
 
-        #pathDetails { 
-            margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; 
-            max-height: 200px; overflow-y: auto; width: 100%; border-top: 1px dashed #555; padding-top: 15px; 
-        }
-        .btn-path { background-color: #2E7D32; color: white; width: 80%; text-align: center; font-family: monospace; font-size: 15px; } /* Xanh lá */
+        #pathDetails { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-height: 200px; overflow-y: auto; width: 100%; border-top: 1px dashed #555; padding-top: 15px; }
+        .btn-path { background-color: #2E7D32; color: white; width: 80%; text-align: center; font-family: monospace; font-size: 15px; } 
         .btn-path:hover { background-color: #1B5E20; box-shadow: 0 0 10px #4CAF50; }
         #pathDetails::-webkit-scrollbar { width: 8px; }
         #pathDetails::-webkit-scrollbar-thumb { background-color: #666; border-radius: 4px; }
@@ -39,7 +36,7 @@
 <body>
 
 <div class="container">
-    <h2>Tìm đường đi Hamilton - Nhóm 6-12</h2>
+    <h2>Mô phỏng tìm đường đi Hamilton N6-12</h2>
     
     <div class="controls">
         <span>Chế độ: </span>
@@ -50,14 +47,18 @@
     <canvas id="graphCanvas" width="750" height="400"></canvas>
     
     <div class="controls" style="margin-top: 15px;">
-        <button class="btn-action" onclick="analyzeGraph()">Phân tích và tạo Cây</button>
+        <button class="btn-action" onclick="analyzeGraph()">Phân tích và tạo cây</button>
         <button class="btn-danger" onclick="clearGraph()">Làm sạch đồ thị</button>
     </div>
 
-    <div id="status">Vẽ đồ thị và bấm phân tích...</div>
+    <div id="status">Vẽ đồ thị và phân tích...</div>
     <div id="nodeOptions"></div>
     <div id="pathDetails"></div>
-    <canvas id="treeCanvas" width="750" height="300"></canvas>
+    
+    <p id="treeInstructions" style="display:none; color:#FF9800; font-size:14px; margin-top:15px;">
+        Sử dụng cuộn chuột để thu/phóng cây | Bấm giữ và kéo để di chuyển
+    </p>
+    <canvas id="treeCanvas" width="750" height="350"></canvas>
 </div>
 
 <script>
@@ -69,39 +70,37 @@
     const statusDiv = document.getElementById('status');
     const nodeOptionsDiv = document.getElementById('nodeOptions');
     const pathDetailsDiv = document.getElementById('pathDetails');
+    const treeInstructions = document.getElementById('treeInstructions');
 
     let nodes = []; let edges = []; let nextNodeChar = 65; const RADIUS = 20;
     let mode = 'node'; let selectedNode = null; let draggingNode = null;
 
     let pathsByNode = {}; let treeByNode = {}; let currentActiveTree = null;
+    let traceLog = []; 
     let currentAnimPath = []; let animStep = 0; let animInterval = null;
+    let isSuccessState = false; 
 
-    // --- TƯƠNG TÁC CHUỘT ---
+    let treeScale = 1; let treeOffsetX = 0; let treeOffsetY = 0;
+    let isDraggingTree = false; let dragStartX = 0; let dragStartY = 0;
+
     canvas.addEventListener('mousedown', (e) => {
-        resetAnalysis(); 
-        const pos = getMousePos(canvas, e);
-        const clickedNode = getNodeAt(pos.x, pos.y);
-        
+        resetAnalysis(); const pos = getMousePos(canvas, e); const clickedNode = getNodeAt(pos.x, pos.y);
         if (mode === 'node') {
             if (clickedNode) draggingNode = clickedNode; 
             else { nodes.push({ id: String.fromCharCode(nextNodeChar++), x: pos.x, y: pos.y }); drawGraph(); }
         } else if (mode === 'edge') {
             if (clickedNode) {
-                if (!selectedNode) {
-                    selectedNode = clickedNode; 
-                } else if (selectedNode.id !== clickedNode.id) {
+                if (!selectedNode) selectedNode = clickedNode; 
+                else if (selectedNode.id !== clickedNode.id) {
                     const uExists = nodes.find(n => n.id === selectedNode.id);
                     const vExists = nodes.find(n => n.id === clickedNode.id);
                     if (uExists && vExists) {
-                        const exists = edges.some(edge => 
-                            (edge.u === selectedNode.id && edge.v === clickedNode.id) || 
-                            (edge.u === clickedNode.id && edge.v === selectedNode.id)
-                        );
+                        const exists = edges.some(edge => (edge.u === selectedNode.id && edge.v === clickedNode.id) || (edge.u === clickedNode.id && edge.v === selectedNode.id));
                         if (!exists) edges.push({ u: selectedNode.id, v: clickedNode.id });
                     }
                     selectedNode = null; 
                 }
-            } else { selectedNode = null; }
+            } else selectedNode = null; 
             drawGraph();
         }
     });
@@ -112,66 +111,57 @@
         else if (hoveredNode) canvas.style.cursor = 'grab';
         else canvas.style.cursor = (mode === 'node') ? 'crosshair' : 'cell';
     });
-    
     canvas.addEventListener('mouseup', () => { draggingNode = null; canvas.style.cursor = (mode === 'node') ? 'crosshair' : 'cell'; });
 
-    function setMode(newMode) {
-        mode = newMode; selectedNode = null; 
-        document.getElementById('btnNode').classList.toggle('active', mode === 'node');
-        document.getElementById('btnEdge').classList.toggle('active', mode === 'edge'); drawGraph();
-    }
-    
-    function clearGraph() { 
-        nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null;
-        resetAnalysis(); drawGraph(); 
-    }
-    
+    treeCanvas.addEventListener('mousedown', (e) => {
+        isDraggingTree = true; dragStartX = e.clientX - treeOffsetX; dragStartY = e.clientY - treeOffsetY; treeCanvas.style.cursor = 'grabbing';
+    });
+    treeCanvas.addEventListener('mousemove', (e) => {
+        if (!isDraggingTree) return; treeOffsetX = e.clientX - dragStartX; treeOffsetY = e.clientY - dragStartY; drawTree();
+    });
+    treeCanvas.addEventListener('mouseup', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
+    treeCanvas.addEventListener('mouseleave', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
+    treeCanvas.addEventListener('wheel', (e) => {
+        e.preventDefault(); const zoomIntensity = 0.002; let delta = e.deltaY * zoomIntensity;
+        let newScale = treeScale - delta; newScale = Math.max(0.1, Math.min(newScale, 5)); treeScale = newScale; drawTree();
+    });
+
+    function setMode(newMode) { mode = newMode; selectedNode = null; document.getElementById('btnNode').classList.toggle('active', mode === 'node'); document.getElementById('btnEdge').classList.toggle('active', mode === 'edge'); drawGraph(); }
+    function clearGraph() { nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null; resetAnalysis(); drawGraph(); }
     function resetAnalysis() {
-        pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null;
+        pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null; traceLog = []; isSuccessState = false;
         clearInterval(animInterval); nodeOptionsDiv.innerHTML = ''; pathDetailsDiv.innerHTML = '';
-        treeCanvas.style.display = 'none';
-        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng phân tích lại."; statusDiv.style.color = "#aaa"; drawGraph();
+        treeCanvas.style.display = 'none'; treeInstructions.style.display = 'none';
+        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng Phân tích lại."; statusDiv.style.color = "#aaa"; drawGraph();
     }
-    
     function getMousePos(cvs, e) { const rect = cvs.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
     function getNodeAt(x, y) { return nodes.find(n => Math.hypot(n.x - x, n.y - y) <= RADIUS); }
     function getNodeById(id) { return nodes.find(n => n.id === id); }
 
-    // --- THUẬT TOÁN TẠO CÂY QUAY LUI ---
     function analyzeGraph() {
         if (nodes.length === 0) { statusDiv.innerText = "Vui lòng vẽ đồ thị trước!"; return; }
         resetAnalysis();
-        const adj = {};
-        nodes.forEach(n => adj[n.id] = []);
+        const adj = {}; nodes.forEach(n => adj[n.id] = []);
         edges.forEach(e => { if(adj[e.u] && adj[e.v]) { adj[e.u].push(e.v); adj[e.v].push(e.u); } });
 
         function buildTree(pathArray) {
             let nodeData = { id: pathArray[pathArray.length - 1], path: [...pathArray], children: [], isSolution: false };
-            if (pathArray.length === nodes.length) {
-                nodeData.isSolution = true; pathsByNode[pathArray[0]].push([...pathArray]); return nodeData;
-            }
+            if (pathArray.length === nodes.length) { nodeData.isSolution = true; pathsByNode[pathArray[0]].push([...pathArray]); return nodeData; }
             const last = nodeData.id;
             for (let neighbor of adj[last]) {
-                if (!pathArray.includes(neighbor)) {
-                    pathArray.push(neighbor);
-                    let childTree = buildTree(pathArray);
-                    if (childTree) nodeData.children.push(childTree);
-                    pathArray.pop(); 
-                }
+                if (!pathArray.includes(neighbor)) { pathArray.push(neighbor); let childTree = buildTree(pathArray); if (childTree) nodeData.children.push(childTree); pathArray.pop(); }
             }
             return nodeData;
         }
 
         nodes.forEach(startNode => {
-            pathsByNode[startNode.id] = [];
-            let rootNode = buildTree([startNode.id]);
+            pathsByNode[startNode.id] = []; let rootNode = buildTree([startNode.id]);
             if (rootNode.children.length > 0 || nodes.length === 1) treeByNode[startNode.id] = rootNode;
         });
 
         const validNodes = Object.keys(pathsByNode).filter(k => pathsByNode[k].length > 0);
-        if (validNodes.length === 0) {
-            statusDiv.innerText = "Không có đường đi Hamilton nào!"; statusDiv.style.color = "#f44336";
-        } else {
+        if (validNodes.length === 0) { statusDiv.innerText = "Không có đường đi Hamilton nào!"; statusDiv.style.color = "#f44336"; } 
+        else {
             statusDiv.innerText = `Bấm vào một đỉnh bên dưới để xem cây quay lui`; statusDiv.style.color = "#4CAF50";
             validNodes.forEach(nodeId => {
                 const btn = document.createElement('button'); btn.className = 'btn-node';
@@ -189,9 +179,8 @@
             else node.leafCount = node.children.reduce((sum, child) => sum + calcLeaves(child), 0);
             return node.leafCount;
         }
-        calcLeaves(root);
-        treeCanvas.height = Math.max(300, nodes.length * 75 + 40);
-        const LEVEL_HEIGHT = 75;
+        const totalLeaves = calcLeaves(root);
+        const virtualWidth = Math.max(treeCanvas.width, totalLeaves * 60); const LEVEL_HEIGHT = 80;
 
         function assignCoords(node, left, right, y) {
             node.x = (left + right) / 2; node.y = y;
@@ -202,18 +191,21 @@
                 currentLeft += childWidth;
             });
         }
-        assignCoords(root, 30, treeCanvas.width - 30, 40);
+        let startLeft = virtualWidth > treeCanvas.width ? 0 : (treeCanvas.width - virtualWidth)/2;
+        assignCoords(root, startLeft, startLeft + virtualWidth, 40);
+        
+        treeScale = 1; treeOffsetX = 0; treeOffsetY = 0;
+        if (virtualWidth > treeCanvas.width) treeOffsetX = (treeCanvas.width / 2) - root.x;
     }
 
     function showPathsAndTreeForNode(nodeId, clickedBtn) {
-        document.querySelectorAll('.btn-node').forEach(b => b.classList.remove('selected'));
-        clickedBtn.classList.add('selected');
-
-        treeCanvas.style.display = 'block';
+        document.querySelectorAll('.btn-node').forEach(b => b.classList.remove('selected')); clickedBtn.classList.add('selected');
+        
+        treeCanvas.style.display = 'block'; treeInstructions.style.display = 'block';
         currentActiveTree = treeByNode[nodeId]; calculateTreeLayout(currentActiveTree);
-        currentAnimPath = []; animStep = 0; drawTree(); 
+        currentAnimPath = []; animStep = 0; traceLog = []; isSuccessState = false; drawTree(); drawGraph();
 
-        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#fff;">Các đường đi từ <span style="color:#00E5FF">${nodeId}</span> (Click để phát sáng):</h4>`;
+        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#fff;">Các đường đi từ <span style="color:#00E5FF">${nodeId}</span> (Click để mô phỏng):</h4>`;
         pathsByNode[nodeId].forEach((pathObj, index) => {
             const btn = document.createElement('button'); btn.className = 'btn-path';
             btn.innerHTML = `<strong>#${index + 1}:</strong> <span style="color:#00E5FF">${pathObj[0]}</span> ➔ ${pathObj.slice(1).join(' ➔ ')}`;
@@ -222,59 +214,101 @@
         });
     }
 
-    // --- HOẠT ẢNH & VẼ ---
-    function playAnimation(pathToAnimate) {
-        clearInterval(animInterval); currentAnimPath = pathToAnimate; animStep = 0;
-        statusDiv.innerText = `Đang phát sáng: ${currentAnimPath.join(' ➔ ')}`; statusDiv.style.color = "#FFEB3B";
-        drawGraph(); drawTree();
+    function generateExecutionTrace(startNodeId, targetPath) {
+        let trace = []; let tempPath = []; let found = false;
+        const adj = {}; nodes.forEach(n => adj[n.id] = []);
+        edges.forEach(e => { if(adj[e.u] && adj[e.v]) { adj[e.u].push(e.v); adj[e.v].push(e.u); } });
+
+        function dfs(nodeId) {
+            if (found) return;
+            tempPath.push(nodeId);
+            trace.push([...tempPath]);
+
+            if (tempPath.length === targetPath.length) {
+                let match = true;
+                for(let i=0; i<targetPath.length; i++) { if (tempPath[i] !== targetPath[i]) match = false; }
+                if (match) { found = true; return; }
+            }
+
+            if (tempPath.length === nodes.length) {
+                tempPath.pop(); trace.push([...tempPath]); return;
+            }
+
+            for (let neighbor of adj[nodeId]) {
+                if (!tempPath.includes(neighbor)) {
+                    dfs(neighbor); if (found) return;
+                }
+            }
+            tempPath.pop(); 
+            if(tempPath.length > 0) trace.push([...tempPath]);
+        }
+        dfs(startNodeId);
+        return trace;
+    }
+
+    function playAnimation(targetPath) {
+        clearInterval(animInterval); 
+        isSuccessState = false;
+        
+        traceLog = generateExecutionTrace(targetPath[0], targetPath);
+        animStep = 0;
+        
+        statusDiv.innerText = `Đang dò đường...`; statusDiv.style.color = "#b388ff";
+        
         animInterval = setInterval(() => {
-            if (animStep < currentAnimPath.length) { animStep++; drawGraph(); drawTree(); } 
-            else clearInterval(animInterval);
-        }, 800);
+            if (animStep < traceLog.length) { 
+                currentAnimPath = traceLog[animStep];
+                
+                if (animStep === traceLog.length - 1) {
+                    isSuccessState = true;
+                    statusDiv.innerText = `Đã tìm thấy: ${currentAnimPath.join(' ➔ ')}`; 
+                    statusDiv.style.color = "#FFEB3B";
+                } else {
+                    statusDiv.innerText = `Đang dò: ${currentAnimPath.join(' ➔ ')}`; 
+                }
+                
+                drawGraph(); drawTree(); 
+                animStep++;
+            } else {
+                clearInterval(animInterval); 
+            }
+        }, 350); 
     }
 
     function drawGraph() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         ctx.lineWidth = 2; ctx.strokeStyle = '#cccccc'; 
-        edges.forEach(edge => {
-            const u = getNodeById(edge.u); const v = getNodeById(edge.v);
-            if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); }
-        });
-
-        if (currentAnimPath.length > 0 && animStep > 0) {
-            ctx.lineWidth = 5; ctx.strokeStyle = '#FFEB3B'; 
-            ctx.shadowColor = '#FFEB3B'; ctx.shadowBlur = 10;
-            for (let i = 0; i < animStep - 1; i++) {
+        edges.forEach(edge => { const u = getNodeById(edge.u); const v = getNodeById(edge.v); if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); } });
+        
+        if (currentAnimPath.length > 0) {
+            ctx.lineWidth = 5; 
+            let pathColor = isSuccessState ? '#FFEB3B' : '#b388ff';
+            ctx.strokeStyle = pathColor; 
+            ctx.shadowColor = pathColor; ctx.shadowBlur = 10;
+            
+            for (let i = 0; i < currentAnimPath.length - 1; i++) {
                 const u = getNodeById(currentAnimPath[i]); const v = getNodeById(currentAnimPath[i+1]);
                 if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); }
             }
             ctx.shadowBlur = 0; 
         }
-
         nodes.forEach(n => {
-            let bgColor = '#ffffff', textColor = '#333333', borderColor = '#333333';
-            let isGlowing = false; let glowColor = '';
-            
+            let bgColor = '#ffffff', textColor = '#333333', borderColor = '#333333'; let isGlowing = false; let glowColor = '';
             if (selectedNode && selectedNode.id === n.id) bgColor = '#fff59d';
             
             if (currentAnimPath.length > 0) {
                 const stepIndex = currentAnimPath.indexOf(n.id);
-                if (stepIndex === 0) {
-                    bgColor = '#00E5FF'; textColor = '#000'; borderColor = '#00B8D4';
-                    isGlowing = true; glowColor = '#00E5FF';
-                } else if (stepIndex !== -1 && stepIndex < animStep) {
-                    bgColor = '#FF9800'; textColor = '#fff'; borderColor = '#E65100';
-                    isGlowing = true; glowColor = '#FF9800';
+                if (stepIndex === 0) { 
+                    bgColor = '#00E5FF'; textColor = '#000'; borderColor = '#00B8D4'; isGlowing = true; glowColor = '#00E5FF'; 
+                } else if (stepIndex !== -1) { 
+                    bgColor = isSuccessState ? '#FF9800' : '#7e57c2'; 
+                    textColor = '#fff'; borderColor = isSuccessState ? '#E65100' : '#512da8'; 
+                    isGlowing = true; glowColor = isSuccessState ? '#FF9800' : '#b388ff'; 
                 }
             }
-            
-            ctx.beginPath(); ctx.arc(n.x, n.y, RADIUS, 0, 2 * Math.PI);
-            ctx.fillStyle = bgColor;
+            ctx.beginPath(); ctx.arc(n.x, n.y, RADIUS, 0, 2 * Math.PI); ctx.fillStyle = bgColor;
             if (isGlowing) { ctx.shadowColor = glowColor; ctx.shadowBlur = 20; }
-            ctx.fill(); ctx.shadowBlur = 0;
-            
-            ctx.lineWidth = 2; ctx.strokeStyle = borderColor; ctx.stroke();
+            ctx.fill(); ctx.shadowBlur = 0; ctx.lineWidth = 2; ctx.strokeStyle = borderColor; ctx.stroke();
             ctx.fillStyle = textColor; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.id, n.x, n.y);
         });
     }
@@ -282,59 +316,56 @@
     function drawTree() {
         if (!currentActiveTree) return;
         treeCtx.clearRect(0, 0, treeCanvas.width, treeCanvas.height);
+        treeCtx.save(); treeCtx.translate(treeOffsetX, treeOffsetY); treeCtx.scale(treeScale, treeScale);
         
         function renderNodeAndEdges(node) {
             node.children.forEach(child => {
-                let isGlowingEdge = false;
+                let isPathEdge = false;
                 if (currentAnimPath.length > 0) {
                     let matches = true;
                     for(let i = 0; i < child.path.length; i++) { if (child.path[i] !== currentAnimPath[i]) matches = false; }
-                    if (matches && child.path.length <= animStep) isGlowingEdge = true;
+                    if (matches && child.path.length <= currentAnimPath.length) isPathEdge = true;
                 }
 
                 treeCtx.beginPath(); treeCtx.moveTo(node.x, node.y + 15); treeCtx.lineTo(child.x, child.y - 15);
-                if (isGlowingEdge) {
-                    treeCtx.strokeStyle = '#FFEB3B'; treeCtx.lineWidth = 4; treeCtx.shadowColor = '#FFEB3B'; treeCtx.shadowBlur = 15; 
-                } else {
-                    treeCtx.strokeStyle = '#5D4037'; treeCtx.lineWidth = 2; treeCtx.shadowBlur = 0; 
+                if (isPathEdge) { 
+                    treeCtx.strokeStyle = isSuccessState ? '#FFEB3B' : '#b388ff'; 
+                    treeCtx.lineWidth = 4 / treeScale; treeCtx.shadowColor = treeCtx.strokeStyle; treeCtx.shadowBlur = 15; 
+                } else { 
+                    treeCtx.strokeStyle = '#5D4037'; treeCtx.lineWidth = 2 / treeScale; treeCtx.shadowBlur = 0; 
                 }
-                treeCtx.stroke(); treeCtx.shadowBlur = 0; 
-                renderNodeAndEdges(child); 
+                treeCtx.stroke(); treeCtx.shadowBlur = 0; renderNodeAndEdges(child); 
             });
 
-            let nodeType = 'normal'; // 'start', 'path', 'normal', 'leaf_success'
-            
+            let nodeType = 'normal'; 
             if (currentAnimPath.length > 0) {
                 let matchesPrefix = true;
                 for(let i = 0; i < node.path.length; i++) { if (node.path[i] !== currentAnimPath[i]) matchesPrefix = false; }
-                if (matchesPrefix && node.path.length <= animStep) {
-                    nodeType = (node.path.length === 1) ? 'start' : 'path';
-                }
+                if (matchesPrefix && node.path.length <= currentAnimPath.length) nodeType = (node.path.length === 1) ? 'start' : 'path';
             }
             if (nodeType === 'normal' && node.isSolution) nodeType = 'leaf_success';
 
             treeCtx.beginPath(); treeCtx.arc(node.x, node.y, 15, 0, 2 * Math.PI);
             
-            if (nodeType === 'start') {
-                treeCtx.fillStyle = '#00E5FF'; treeCtx.shadowColor = '#00E5FF'; treeCtx.shadowBlur = 20;
-            } else if (nodeType === 'path') {
-                treeCtx.fillStyle = '#FF9800'; treeCtx.shadowColor = '#FF9800'; treeCtx.shadowBlur = 20;
+            if (nodeType === 'start') { 
+                treeCtx.fillStyle = '#00E5FF'; treeCtx.shadowColor = '#00E5FF'; treeCtx.shadowBlur = 20; 
+            } else if (nodeType === 'path') { 
+                treeCtx.fillStyle = isSuccessState ? '#FF9800' : '#7e57c2'; 
+                treeCtx.shadowColor = isSuccessState ? '#FF9800' : '#b388ff'; treeCtx.shadowBlur = 20; 
             } else if (nodeType === 'leaf_success') {
                 treeCtx.fillStyle = '#4CAF50'; 
             } else {
-                treeCtx.fillStyle = '#3E2723';
+                treeCtx.fillStyle = '#3E2723'; 
             }
             
             treeCtx.fill(); treeCtx.shadowBlur = 0;
-            
-            treeCtx.strokeStyle = (nodeType === 'start' || nodeType === 'path') ? '#FFF' : '#795548'; 
-            treeCtx.lineWidth = 2; treeCtx.stroke();
-            
+            treeCtx.strokeStyle = (nodeType === 'start' || nodeType === 'path') ? '#FFF' : '#795548'; treeCtx.lineWidth = 2 / treeScale; treeCtx.stroke();
             treeCtx.fillStyle = (nodeType === 'start' || nodeType === 'path') ? '#000' : '#FFF';
             treeCtx.font = 'bold 14px Arial'; treeCtx.textAlign = 'center'; treeCtx.textBaseline = 'middle'; treeCtx.fillText(node.id, node.x, node.y);
         }
 
         renderNodeAndEdges(currentActiveTree);
+        treeCtx.restore();
     }
 
     nodes = [ { id: 'A', x: 250, y: 150 }, { id: 'B', x: 500, y: 150 }, { id: 'C', x: 500, y: 350 }, { id: 'D', x: 250, y: 350 } ];
