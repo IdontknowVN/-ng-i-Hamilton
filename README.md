@@ -6,7 +6,7 @@
 
 # Ngôn ngữ
 HTML
-### Không sử dụng bất kỳ thư viện bên ngoài nào (No Dependencies).
+### Không sử dụng bất kỳ thư viện bên ngoài nào (No dependencies).
 # Tính năng
 Vẽ đồ thị tương tác: Thêm đỉnh, nối cạnh và kéo thả để sắp xếp đồ thị theo ý trên Canvas.
 
@@ -24,23 +24,23 @@ Di chuyển đỉnh: Bạn có thể bấm giữ chuột vào bất kỳ đỉnh
 Thêm Cạnh: Chọn chế độ "Thêm cạnh". Click vào đỉnh thứ nhất (đỉnh sẽ chuyển màu vàng), sau đó click vào đỉnh thứ hai để tạo đường nối.
 
 
-## Bước 2: Phân tích Thuật toán
+## Bước 2: Phân tích thuật toán
 Bấm nút "Phân tích và tạo cây". Hệ thống sẽ chạy thuật toán Backtracking ngầm để quét qua toàn bộ các đỉnh.
 
 Nếu đồ thị có tồn tại đường đi Hamilton, danh sách các "Đỉnh xuất phát" hợp lệ sẽ hiện ra bên dưới.
 
 <img width="841" height="90" alt="Screenshot 2026-04-07 164837" src="https://github.com/user-attachments/assets/a5c3bb7b-6fff-4098-ab89-a2749b060019" />
 
-## Bước 3: Xem Không gian Khám phá (Cây Quay lui)
+## Bước 3: Xem không gian khám phá (Cây quay lui)
 Click vào một nút Đỉnh X (n đường) bất kỳ.
-Bảng vẽ thứ hai (Tree Canvas) sẽ xuất hiện, hiển thị toàn bộ Cây Quay lui xuất phát từ đỉnh đó.
+Bảng vẽ thứ hai (Tree canvas) sẽ xuất hiện, hiển thị toàn bộ cây quay lui xuất phát từ đỉnh đó.
 
 <img width="835" height="637" alt="Screenshot 2026-04-07 164910" src="https://github.com/user-attachments/assets/12ea9616-7ae6-4bfb-b40f-5b476270bc2f" />
 
-## Bước 4: Chạy Mô phỏng Phát sáng
-Ngay dưới bảng vẽ Cây, bạn sẽ thấy danh sách các con đường cụ thể (Ví dụ: #1: A ➔ B ➔ D ➔ C).
+## Bước 4: Chạy mô phỏng
+Ngay dưới bảng vẽ cây, bạn sẽ thấy danh sách các con đường cụ thể (Ví dụ: #1: A ➔ B ➔ D ➔ C).
 
-Click vào một con đường để xem hoạt ảnh. Thuật toán sẽ chạy từng bước, làm phát sáng đồng bộ cả Đồ thị phía trên và Nhánh cây tương ứng phía dưới.
+Click vào một con đường để xem hoạt ảnh. Thuật toán sẽ chạy từng bước, làm phát sáng đồng bộ cả đồ thị phía trên và Nhánh cây tương ứng phía dưới.
 
 <img width="833" height="377" alt="Screenshot 2026-04-07 164945" src="https://github.com/user-attachments/assets/5bfea34d-f64e-46e4-9508-5cca9cf30a25" />
 
