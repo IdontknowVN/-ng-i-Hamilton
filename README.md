@@ -1,4 +1,4 @@
-# Mô phỏng đường đi Hamilton
+# Mô phỏng tìm chu trình và đường đi Hamilton
   Một web tương tác trực quan giúp người dùng hiểu rõ về đường đi Hamilton và cách thuật toán quay lui (Backtracking) hoạt động để tìm kiếm đường đi.
   
 <img width="861" height="736" alt="Screenshot 2026-04-07 164809" src="https://github.com/user-attachments/assets/0eee96c3-24f3-4662-8dec-d6ffba6ef3cb" />
