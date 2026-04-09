@@ -57,7 +57,7 @@
     
     <div class="controls" style="margin-top: 15px;">
         <button class="btn-action" onclick="analyzeGraph()">Phân tích đồ thị và tạo cây</button>
-        <button class="btn-danger" onclick="clearGraph()">Làm sạch đồ thị</button>
+        <button class="btn-danger" onclick="clearGraph()">Xóa đồ thị</button>
     </div>
 
     <div class="speed-control">
@@ -469,7 +469,11 @@
         renderNodeAndEdges(currentActiveTree);
         treeCtx.restore();
     }
+    nodes = [ { id: 'A', x: 220, y: 250 }, { id: 'B', x: 350, y: 100 }, { id: 'C', x: 500, y: 250 }, { id: 'D', x: 350, y: 350 }, { id: 'E', x:375, y:250} ];
+    edges = [ { u: 'A', v: 'B' }, { u: 'B', v: 'C' }, { u: 'C', v: 'D' }, { u: 'D', v: 'A' }, { u: 'E', v: 'C' }, { u: 'B',v:'E'},{u:'E',v:'D'} ]; 
+    nextNodeChar = 69;
     startEngine();
 </script>
 </body>
 </html>
+
