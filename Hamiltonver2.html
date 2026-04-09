@@ -6,16 +6,20 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { background: #2a2a40; padding: 20px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); max-width: 800px; width: 100%; text-align: center; }
-        .controls { margin-bottom: 15px; }
-        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
+        .controls { margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
+        button { padding: 10px 15px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
         .btn-mode { background-color: #444; color: #fff; }
         .btn-mode.active { background-color: #4CAF50; color: white; box-shadow: 0 0 10px #4CAF50; }
+        .btn-mode.active-del { background-color: #f44336; color: white; box-shadow: 0 0 10px #f44336; }
         .btn-action { background-color: #9C27B0; color: white; }
         .btn-action:hover { background-color: #7B1FA2; box-shadow: 0 0 10px #9C27B0; }
         .btn-danger { background-color: #f44336; color: white; }
         .btn-danger:hover { background-color: #d32f2f; }
         
-        canvas { border: 2px solid #555; border-radius: 5px; background-color: #0f101b; cursor: crosshair; margin-top: 10px; width: 100%; max-width: 750px; }
+        .speed-control { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; background: #12121a; padding: 10px; border-radius: 6px; border: 1px solid #555; }
+        .speed-control input[type=range] { width: 200px; cursor: pointer; }
+
+        canvas { border: 2px solid #555; border-radius: 5px; background-color: #13111f; margin-top: 10px; width: 100%; max-width: 750px; }
         #treeCanvas { background-color: #12121a; display: none; cursor: grab; }
         
         #status { margin-top: 15px; font-size: 16px; font-weight: bold; color: #aaa; }
@@ -27,8 +31,11 @@
         .btn-node.selected { background-color: #5D4037; box-shadow: 0 0 15px #8D6E63; border: 2px solid #fff; }
 
         #pathDetails { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-height: 200px; overflow-y: auto; width: 100%; border-top: 1px dashed #555; padding-top: 15px; }
-        .btn-path { background-color: #2E7D32; color: white; width: 80%; text-align: center; font-family: monospace; font-size: 15px; } 
+        .btn-path { background-color: #2E7D32; color: white; width: 90%; text-align: center; font-family: monospace; font-size: 15px; } 
         .btn-path:hover { background-color: #1B5E20; box-shadow: 0 0 10px #4CAF50; }
+        .btn-cycle { background-color: #00838F; color: white; width: 90%; text-align: center; font-family: monospace; font-size: 15px; border: 1px solid #00E5FF; } 
+        .btn-cycle:hover { background-color: #006064; box-shadow: 0 0 10px #00E5FF; }
+
         #pathDetails::-webkit-scrollbar { width: 8px; }
         #pathDetails::-webkit-scrollbar-thumb { background-color: #666; border-radius: 4px; }
     </style>
@@ -36,27 +43,36 @@
 <body>
 
 <div class="container">
-    <h2>Mô phỏng tìm đường đi Hamilton N6-12</h2>
+    <h2>Mô phỏng tìm chu trình và đường đi Hamilton N6-12</h2>
     
     <div class="controls">
         <span>Chế độ: </span>
         <button id="btnNode" class="btn-mode active" onclick="setMode('node')">Thêm đỉnh</button>
         <button id="btnEdge" class="btn-mode" onclick="setMode('edge')">Thêm cạnh</button>
+        <button id="btnDelNode" class="btn-mode" onclick="setMode('del_node')">Xóa đỉnh</button>
+        <button id="btnDelEdge" class="btn-mode" onclick="setMode('del_edge')">Xóa cạnh</button>
     </div>
 
     <canvas id="graphCanvas" width="750" height="400"></canvas>
     
     <div class="controls" style="margin-top: 15px;">
-        <button class="btn-action" onclick="analyzeGraph()">Phân tích và tạo cây</button>
+        <button class="btn-action" onclick="analyzeGraph()">Phân tích đồ thị và tạo cây</button>
         <button class="btn-danger" onclick="clearGraph()">Làm sạch đồ thị</button>
     </div>
 
-    <div id="status">Vẽ đồ thị và phân tích...</div>
+    <div class="speed-control">
+        <span style="font-weight: bold; color: #FF9800;">Tốc độ dò tìm:</span>
+        <span style="font-size: 12px; color: #aaa;">Chậm</span>
+        <input type="range" id="speedSlider" min="1" max="100" value="50">
+        <span style="font-size: 12px; color: #aaa;">Nhanh</span>
+    </div>
+
+    <div id="status">Vẽ, chỉnh sửa đồ thị và bấm phân tích...</div>
     <div id="nodeOptions"></div>
     <div id="pathDetails"></div>
     
     <p id="treeInstructions" style="display:none; color:#FF9800; font-size:14px; margin-top:15px;">
-        Sử dụng cuộn chuột để thu/phóng cây | Bấm giữ và kéo để di chuyển
+        Cuộn chuột để thu/phóng cây | Bấm giữ và kéo để di chuyển
     </p>
     <canvas id="treeCanvas" width="750" height="350"></canvas>
 </div>
@@ -71,69 +87,117 @@
     const nodeOptionsDiv = document.getElementById('nodeOptions');
     const pathDetailsDiv = document.getElementById('pathDetails');
     const treeInstructions = document.getElementById('treeInstructions');
-
+    const speedSlider = document.getElementById('speedSlider');
     let nodes = []; let edges = []; let nextNodeChar = 65; const RADIUS = 20;
     let mode = 'node'; let selectedNode = null; let draggingNode = null;
-
     let pathsByNode = {}; let treeByNode = {}; let currentActiveTree = null;
+    let isSimulating = false;
     let traceLog = []; 
-    let currentAnimPath = []; let animStep = 0; let animInterval = null;
-    let isSuccessState = false; 
-
+    let currentAnimPath = []; let animStep = 0; 
+    let isSuccessState = false;
+    let currentIsCycle = false; 
+    let logicDelay = 400; 
+    let lastLogicTime = 0;
+    let backtrackFlash = null;
+    let uiAnimations = [];
     let treeScale = 1; let treeOffsetX = 0; let treeOffsetY = 0;
     let isDraggingTree = false; let dragStartX = 0; let dragStartY = 0;
+    function startEngine() { requestAnimationFrame(globalRenderLoop); }
 
+    function globalRenderLoop(currentTime) {
+        if (isSimulating && !isSuccessState && (currentTime - lastLogicTime > logicDelay)) {
+            if (animStep < traceLog.length) {
+                const stepData = traceLog[animStep];
+                currentAnimPath = stepData.path;
+                
+                if (stepData.action === 'BACKTRACK') { backtrackFlash = { nodeId: stepData.node, startTime: currentTime }; }
+
+                if (animStep === traceLog.length - 1) {
+                    isSuccessState = true;
+                    isSimulating = false; 
+                    currentIsCycle = stepData.isCycle;
+                    
+                    if (currentIsCycle) {
+                        statusDiv.innerText = `Đã tìm thấy chu trình Hamilton!`; 
+                        statusDiv.style.color = "#00E676";
+                    } else {
+                        statusDiv.innerText = `Đã tìm thấy đường đi Hamilton!`; 
+                        statusDiv.style.color = "#FFEB3B";
+                    }
+                } else {
+                    statusDiv.innerText = `Đang dò: ${currentAnimPath.join(' ➔ ')}`; 
+                }
+                animStep++; lastLogicTime = currentTime;
+            }
+        }
+        drawGraph(currentTime); drawTree(currentTime);
+        requestAnimationFrame(globalRenderLoop);
+    }
+    speedSlider.addEventListener('input', (e) => { logicDelay = 1000 - ((parseInt(e.target.value) - 1) * 9.89); });
+    function addUIAnim(animObj) { animObj.startTime = performance.now(); uiAnimations.push(animObj); }
     canvas.addEventListener('mousedown', (e) => {
-        resetAnalysis(); const pos = getMousePos(canvas, e); const clickedNode = getNodeAt(pos.x, pos.y);
+        resetAnalysis(); 
+        const pos = getMousePos(canvas, e); const clickedNode = getNodeAt(pos.x, pos.y);
         if (mode === 'node') {
             if (clickedNode) draggingNode = clickedNode; 
-            else { nodes.push({ id: String.fromCharCode(nextNodeChar++), x: pos.x, y: pos.y }); drawGraph(); }
-        } else if (mode === 'edge') {
+            else { nodes.push({ id: String.fromCharCode(nextNodeChar++), x: pos.x, y: pos.y }); addUIAnim({type: 'add_node', x: pos.x, y: pos.y, duration: 600}); }
+        } else if (mode === 'del_node') {
             if (clickedNode) {
-                if (!selectedNode) selectedNode = clickedNode; 
-                else if (selectedNode.id !== clickedNode.id) {
-                    const uExists = nodes.find(n => n.id === selectedNode.id);
-                    const vExists = nodes.find(n => n.id === clickedNode.id);
-                    if (uExists && vExists) {
-                        const exists = edges.some(edge => (edge.u === selectedNode.id && edge.v === clickedNode.id) || (edge.u === clickedNode.id && edge.v === selectedNode.id));
-                        if (!exists) edges.push({ u: selectedNode.id, v: clickedNode.id });
+                const nx = clickedNode.x, ny = clickedNode.y;
+                nodes = nodes.filter(n => n.id !== clickedNode.id);
+                edges = edges.filter(edge => edge.u !== clickedNode.id && edge.v !== clickedNode.id);
+                addUIAnim({type: 'del_node', x: nx, y: ny, duration: 600}); selectedNode = null;
+            }
+        } else if (mode === 'edge' || mode === 'del_edge') {
+            if (clickedNode) {
+                if (!selectedNode) { selectedNode = clickedNode; 
+                } else if (selectedNode.id !== clickedNode.id) {
+                    const u = selectedNode; const v = clickedNode;
+                    if (mode === 'edge') {
+                        const exists = edges.some(edge => (edge.u === u.id && edge.v === v.id) || (edge.u === v.id && edge.v === u.id));
+                        if (!exists) { edges.push({ u: u.id, v: v.id }); addUIAnim({type: 'add_edge', u: u, v: v, duration: 600}); }
+                    } else if (mode === 'del_edge') {
+                        const initLength = edges.length;
+                        edges = edges.filter(edge => !((edge.u === u.id && edge.v === v.id) || (edge.u === v.id && edge.v === u.id)));
+                        if (edges.length < initLength) addUIAnim({type: 'del_edge', u: u, v: v, duration: 600});
                     }
                     selectedNode = null; 
                 }
             } else selectedNode = null; 
-            drawGraph();
         }
     });
 
     canvas.addEventListener('mousemove', (e) => {
         const pos = getMousePos(canvas, e); const hoveredNode = getNodeAt(pos.x, pos.y);
-        if (draggingNode) { draggingNode.x = pos.x; draggingNode.y = pos.y; canvas.style.cursor = 'grabbing'; drawGraph(); } 
-        else if (hoveredNode) canvas.style.cursor = 'grab';
-        else canvas.style.cursor = (mode === 'node') ? 'crosshair' : 'cell';
+        if (draggingNode) { draggingNode.x = pos.x; draggingNode.y = pos.y; canvas.style.cursor = 'grabbing'; } 
+        else if (hoveredNode) canvas.style.cursor = (mode.includes('del')) ? 'pointer' : 'grab';
+        else canvas.style.cursor = 'crosshair';
     });
-    canvas.addEventListener('mouseup', () => { draggingNode = null; canvas.style.cursor = (mode === 'node') ? 'crosshair' : 'cell'; });
+    canvas.addEventListener('mouseup', () => { draggingNode = null; });
 
-    treeCanvas.addEventListener('mousedown', (e) => {
-        isDraggingTree = true; dragStartX = e.clientX - treeOffsetX; dragStartY = e.clientY - treeOffsetY; treeCanvas.style.cursor = 'grabbing';
-    });
-    treeCanvas.addEventListener('mousemove', (e) => {
-        if (!isDraggingTree) return; treeOffsetX = e.clientX - dragStartX; treeOffsetY = e.clientY - dragStartY; drawTree();
-    });
+    treeCanvas.addEventListener('mousedown', (e) => { isDraggingTree = true; dragStartX = e.clientX - treeOffsetX; dragStartY = e.clientY - treeOffsetY; treeCanvas.style.cursor = 'grabbing'; });
+    treeCanvas.addEventListener('mousemove', (e) => { if (!isDraggingTree) return; treeOffsetX = e.clientX - dragStartX; treeOffsetY = e.clientY - dragStartY; });
     treeCanvas.addEventListener('mouseup', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
     treeCanvas.addEventListener('mouseleave', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
-    treeCanvas.addEventListener('wheel', (e) => {
-        e.preventDefault(); const zoomIntensity = 0.002; let delta = e.deltaY * zoomIntensity;
-        let newScale = treeScale - delta; newScale = Math.max(0.1, Math.min(newScale, 5)); treeScale = newScale; drawTree();
-    });
+    treeCanvas.addEventListener('wheel', (e) => { e.preventDefault(); const zoomIntensity = 0.002; treeScale = Math.max(0.1, Math.min(treeScale - (e.deltaY * zoomIntensity), 5)); });
 
-    function setMode(newMode) { mode = newMode; selectedNode = null; document.getElementById('btnNode').classList.toggle('active', mode === 'node'); document.getElementById('btnEdge').classList.toggle('active', mode === 'edge'); drawGraph(); }
-    function clearGraph() { nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null; resetAnalysis(); drawGraph(); }
-    function resetAnalysis() {
-        pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null; traceLog = []; isSuccessState = false;
-        clearInterval(animInterval); nodeOptionsDiv.innerHTML = ''; pathDetailsDiv.innerHTML = '';
-        treeCanvas.style.display = 'none'; treeInstructions.style.display = 'none';
-        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng Phân tích lại."; statusDiv.style.color = "#aaa"; drawGraph();
+    function setMode(newMode) { 
+        mode = newMode; selectedNode = null; 
+        document.querySelectorAll('.btn-mode').forEach(b => { b.classList.remove('active'); b.classList.remove('active-del'); });
+        const btn = document.getElementById(newMode === 'node' ? 'btnNode' : newMode === 'edge' ? 'btnEdge' : newMode === 'del_node' ? 'btnDelNode' : 'btnDelEdge');
+        btn.classList.add(newMode.includes('del') ? 'active-del' : 'active');
     }
+
+    function clearGraph() { nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null; resetAnalysis(); }
+    
+    function resetAnalysis() {
+        pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null; traceLog = []; 
+        isSimulating = false; isSuccessState = false; currentIsCycle = false; backtrackFlash = null;
+        nodeOptionsDiv.innerHTML = ''; pathDetailsDiv.innerHTML = '';
+        treeCanvas.style.display = 'none'; treeInstructions.style.display = 'none';
+        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng phân tích lại."; statusDiv.style.color = "#aaa";
+    }
+    
     function getMousePos(cvs, e) { const rect = cvs.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
     function getNodeAt(x, y) { return nodes.find(n => Math.hypot(n.x - x, n.y - y) <= RADIUS); }
     function getNodeById(id) { return nodes.find(n => n.id === id); }
@@ -145,11 +209,27 @@
         edges.forEach(e => { if(adj[e.u] && adj[e.v]) { adj[e.u].push(e.v); adj[e.v].push(e.u); } });
 
         function buildTree(pathArray) {
-            let nodeData = { id: pathArray[pathArray.length - 1], path: [...pathArray], children: [], isSolution: false };
-            if (pathArray.length === nodes.length) { nodeData.isSolution = true; pathsByNode[pathArray[0]].push([...pathArray]); return nodeData; }
+            let nodeData = { id: pathArray[pathArray.length - 1], path: [...pathArray], children: [], isSolution: false, isCycle: false };
+            
+            if (pathArray.length === nodes.length) { 
+                nodeData.isSolution = true; 
+                let firstNode = pathArray[0];
+                let lastNode = pathArray[pathArray.length - 1];
+                let isCycle = adj[lastNode].includes(firstNode);
+                nodeData.isCycle = isCycle;
+                
+                pathsByNode[firstNode].push({ path: [...pathArray], isCycle: isCycle }); 
+                return nodeData; 
+            }
+            
             const last = nodeData.id;
             for (let neighbor of adj[last]) {
-                if (!pathArray.includes(neighbor)) { pathArray.push(neighbor); let childTree = buildTree(pathArray); if (childTree) nodeData.children.push(childTree); pathArray.pop(); }
+                if (!pathArray.includes(neighbor)) { 
+                    pathArray.push(neighbor); 
+                    let childTree = buildTree(pathArray); 
+                    if (childTree) nodeData.children.push(childTree); 
+                    pathArray.pop(); 
+                }
             }
             return nodeData;
         }
@@ -160,56 +240,50 @@
         });
 
         const validNodes = Object.keys(pathsByNode).filter(k => pathsByNode[k].length > 0);
-        if (validNodes.length === 0) { statusDiv.innerText = "Không có đường đi Hamilton nào!"; statusDiv.style.color = "#f44336"; } 
+        if (validNodes.length === 0) { statusDiv.innerText = "Không có đường đi/chu trình nào!"; statusDiv.style.color = "#f44336"; } 
         else {
-            statusDiv.innerText = `Bấm vào một đỉnh bên dưới để xem cây quay lui`; statusDiv.style.color = "#4CAF50";
+            statusDiv.innerText = `Bấm vào một đỉnh bên dưới để xem chi tiết`; statusDiv.style.color = "#4CAF50";
             validNodes.forEach(nodeId => {
                 const btn = document.createElement('button'); btn.className = 'btn-node';
-                btn.innerText = `Đỉnh ${nodeId} (${pathsByNode[nodeId].length} đường)`;
+                btn.innerText = `Đỉnh ${nodeId} (${pathsByNode[nodeId].length} khả năng)`;
                 btn.onclick = () => showPathsAndTreeForNode(nodeId, btn);
                 nodeOptionsDiv.appendChild(btn);
             });
         }
-        drawGraph(); 
     }
 
     function calculateTreeLayout(root) {
-        function calcLeaves(node) {
-            if (node.children.length === 0) node.leafCount = 1;
-            else node.leafCount = node.children.reduce((sum, child) => sum + calcLeaves(child), 0);
-            return node.leafCount;
-        }
-        const totalLeaves = calcLeaves(root);
-        const virtualWidth = Math.max(treeCanvas.width, totalLeaves * 60); const LEVEL_HEIGHT = 80;
-
+        function calcLeaves(node) { if (node.children.length === 0) node.leafCount = 1; else node.leafCount = node.children.reduce((sum, child) => sum + calcLeaves(child), 0); return node.leafCount; }
+        const virtualWidth = Math.max(treeCanvas.width, calcLeaves(root) * 60); const LEVEL_HEIGHT = 80;
         function assignCoords(node, left, right, y) {
-            node.x = (left + right) / 2; node.y = y;
-            let currentLeft = left;
-            node.children.forEach(child => {
-                let childWidth = (child.leafCount / node.leafCount) * (right - left);
-                assignCoords(child, currentLeft, currentLeft + childWidth, y + LEVEL_HEIGHT);
-                currentLeft += childWidth;
-            });
+            node.x = (left + right) / 2; node.y = y; let currentLeft = left;
+            node.children.forEach(child => { let childWidth = (child.leafCount / node.leafCount) * (right - left); assignCoords(child, currentLeft, currentLeft + childWidth, y + LEVEL_HEIGHT); currentLeft += childWidth; });
         }
         let startLeft = virtualWidth > treeCanvas.width ? 0 : (treeCanvas.width - virtualWidth)/2;
         assignCoords(root, startLeft, startLeft + virtualWidth, 40);
-        
-        treeScale = 1; treeOffsetX = 0; treeOffsetY = 0;
-        if (virtualWidth > treeCanvas.width) treeOffsetX = (treeCanvas.width / 2) - root.x;
+        treeScale = 1; treeOffsetX = virtualWidth > treeCanvas.width ? (treeCanvas.width / 2) - root.x : 0; treeOffsetY = 0;
     }
 
     function showPathsAndTreeForNode(nodeId, clickedBtn) {
         document.querySelectorAll('.btn-node').forEach(b => b.classList.remove('selected')); clickedBtn.classList.add('selected');
-        
         treeCanvas.style.display = 'block'; treeInstructions.style.display = 'block';
         currentActiveTree = treeByNode[nodeId]; calculateTreeLayout(currentActiveTree);
-        currentAnimPath = []; animStep = 0; traceLog = []; isSuccessState = false; drawTree(); drawGraph();
+        currentAnimPath = []; animStep = 0; traceLog = []; isSimulating = false; isSuccessState = false; currentIsCycle = false;
 
-        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#fff;">Các đường đi từ <span style="color:#00E5FF">${nodeId}</span> (Click để mô phỏng):</h4>`;
+        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#fff;">Kết quả từ <span style="color:#00E5FF">${nodeId}</span> (Click để mô phỏng):</h4>`;
+        
         pathsByNode[nodeId].forEach((pathObj, index) => {
-            const btn = document.createElement('button'); btn.className = 'btn-path';
-            btn.innerHTML = `<strong>#${index + 1}:</strong> <span style="color:#00E5FF">${pathObj[0]}</span> ➔ ${pathObj.slice(1).join(' ➔ ')}`;
-            btn.onclick = () => playAnimation(pathObj);
+            const btn = document.createElement('button'); 
+            
+            if (pathObj.isCycle) {
+                btn.className = 'btn-cycle';
+                btn.innerHTML = `<strong>Chu trình #${index + 1}:</strong> <span style="color:#00E5FF">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')} ➔ <span style="color:#00E5FF">${pathObj.path[0]}</span>`;
+            } else {
+                btn.className = 'btn-path';
+                btn.innerHTML = `<strong>Đường đi #${index + 1}:</strong> <span style="color:#00E5FF">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')}`;
+            }
+            
+            btn.onclick = () => playAnimation(pathObj.path);
             pathDetailsDiv.appendChild(btn);
         });
     }
@@ -221,79 +295,100 @@
 
         function dfs(nodeId) {
             if (found) return;
-            tempPath.push(nodeId);
-            trace.push([...tempPath]);
+            tempPath.push(nodeId); 
+            
+            let isComplete = tempPath.length === targetPath.length;
+            let isCycle = isComplete ? adj[tempPath[tempPath.length - 1]].includes(tempPath[0]) : false;
+            
+            trace.push({ path: [...tempPath], action: 'VISIT', isComplete: isComplete, isCycle: isCycle });
 
-            if (tempPath.length === targetPath.length) {
-                let match = true;
-                for(let i=0; i<targetPath.length; i++) { if (tempPath[i] !== targetPath[i]) match = false; }
+            if (isComplete) {
+                let match = true; for(let i=0; i<targetPath.length; i++) { if (tempPath[i] !== targetPath[i]) match = false; }
                 if (match) { found = true; return; }
             }
 
-            if (tempPath.length === nodes.length) {
-                tempPath.pop(); trace.push([...tempPath]); return;
-            }
-
-            for (let neighbor of adj[nodeId]) {
-                if (!tempPath.includes(neighbor)) {
-                    dfs(neighbor); if (found) return;
-                }
-            }
-            tempPath.pop(); 
-            if(tempPath.length > 0) trace.push([...tempPath]);
+            if (tempPath.length === nodes.length) { let popped = tempPath.pop(); trace.push({ path: [...tempPath], action: 'BACKTRACK', node: popped }); return; }
+            for (let neighbor of adj[nodeId]) { if (!tempPath.includes(neighbor)) { dfs(neighbor); if (found) return; } }
+            let popped = tempPath.pop(); if(tempPath.length > 0) trace.push({ path: [...tempPath], action: 'BACKTRACK', node: popped });
         }
-        dfs(startNodeId);
-        return trace;
+        dfs(startNodeId); return trace;
     }
 
     function playAnimation(targetPath) {
-        clearInterval(animInterval); 
-        isSuccessState = false;
-        
+        isSuccessState = false; currentIsCycle = false;
         traceLog = generateExecutionTrace(targetPath[0], targetPath);
-        animStep = 0;
-        
-        statusDiv.innerText = `Đang dò đường...`; statusDiv.style.color = "#b388ff";
-        
-        animInterval = setInterval(() => {
-            if (animStep < traceLog.length) { 
-                currentAnimPath = traceLog[animStep];
-                
-                if (animStep === traceLog.length - 1) {
-                    isSuccessState = true;
-                    statusDiv.innerText = `Đã tìm thấy: ${currentAnimPath.join(' ➔ ')}`; 
-                    statusDiv.style.color = "#FFEB3B";
-                } else {
-                    statusDiv.innerText = `Đang dò: ${currentAnimPath.join(' ➔ ')}`; 
-                }
-                
-                drawGraph(); drawTree(); 
-                animStep++;
-            } else {
-                clearInterval(animInterval); 
-            }
-        }, 350); 
+        animStep = 0; backtrackFlash = null; lastLogicTime = performance.now();
+        isSimulating = true; 
+        statusDiv.innerText = `Đang dò đường...`; statusDiv.style.color = "#82b1ff";
     }
 
-    function drawGraph() {
+    function drawGraph(time) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.lineWidth = 2; ctx.strokeStyle = '#cccccc'; 
+        
+        ctx.lineWidth = 2; ctx.strokeStyle = '#cccccc'; ctx.setLineDash([]);
         edges.forEach(edge => { const u = getNodeById(edge.u); const v = getNodeById(edge.v); if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); } });
         
-        if (currentAnimPath.length > 0) {
-            ctx.lineWidth = 5; 
-            let pathColor = isSuccessState ? '#FFEB3B' : '#b388ff';
-            ctx.strokeStyle = pathColor; 
-            ctx.shadowColor = pathColor; ctx.shadowBlur = 10;
-            
-            for (let i = 0; i < currentAnimPath.length - 1; i++) {
-                const u = getNodeById(currentAnimPath[i]); const v = getNodeById(currentAnimPath[i+1]);
-                if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); }
+        uiAnimations.forEach(anim => {
+            if (anim.type.includes('edge')) {
+                const elapsed = time - anim.startTime;
+                if (elapsed < anim.duration) {
+                    ctx.beginPath(); ctx.moveTo(anim.u.x, anim.u.y); ctx.lineTo(anim.v.x, anim.v.y);
+                    ctx.lineWidth = 6; ctx.strokeStyle = anim.type === 'add_edge' ? `rgba(76, 175, 80, ${1-(elapsed/anim.duration)})` : `rgba(244, 67, 54, ${1-(elapsed/anim.duration)})`;
+                    if(anim.type === 'del_edge') ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]);
+                }
             }
-            ctx.shadowBlur = 0; 
+        });
+
+        if (currentAnimPath.length > 1) {
+            let successColor = currentIsCycle ? '#00E676' : '#FFEB3B'; 
+            
+            ctx.lineWidth = isSuccessState ? 5 : 4; 
+            ctx.strokeStyle = isSuccessState ? successColor : '#82b1ff'; 
+            
+            if (!isSuccessState) { ctx.setLineDash([10, 10]); ctx.lineDashOffset = -time / 20; 
+            } else { ctx.shadowColor = successColor; ctx.shadowBlur = 10; }
+            
+            ctx.beginPath();
+            const firstNode = getNodeById(currentAnimPath[0]);
+            if(firstNode) ctx.moveTo(firstNode.x, firstNode.y);
+            for (let i = 1; i < currentAnimPath.length; i++) {
+                const n = getNodeById(currentAnimPath[i]); if(n) ctx.lineTo(n.x, n.y);
+            }
+            
+            if (isSuccessState && currentIsCycle) {
+                if(firstNode) ctx.lineTo(firstNode.x, firstNode.y);
+            }
+            
+            ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
         }
+
+        if (backtrackFlash) {
+            const elapsed = time - backtrackFlash.startTime; const flashDuration = Math.min(400, logicDelay * 1.5); 
+            if (elapsed < flashDuration) {
+                const fNode = getNodeById(backtrackFlash.nodeId);
+                if (fNode) { ctx.beginPath(); ctx.arc(fNode.x, fNode.y, RADIUS + 5 + (elapsed/15), 0, 2 * Math.PI); ctx.strokeStyle = `rgba(244, 67, 54, ${1-(elapsed/flashDuration)})`; ctx.lineWidth = 4; ctx.stroke(); }
+            }
+        }
+
+        uiAnimations.forEach(anim => {
+            if (anim.type.includes('node')) {
+                const elapsed = time - anim.startTime;
+                if (elapsed < anim.duration) {
+                    const alpha = 1 - (elapsed / anim.duration);
+                    ctx.beginPath(); ctx.arc(anim.x, anim.y, RADIUS + (elapsed/10), 0, 2 * Math.PI); 
+                    ctx.fillStyle = anim.type === 'add_node' ? `rgba(76, 175, 80, ${alpha*0.5})` : `rgba(244, 67, 54, ${alpha*0.5})`; ctx.fill();
+                    ctx.strokeStyle = anim.type === 'add_node' ? `rgba(76, 175, 80, ${alpha})` : `rgba(244, 67, 54, ${alpha})`; ctx.lineWidth = 3; ctx.stroke();
+                }
+            }
+        });
+        uiAnimations = uiAnimations.filter(anim => (time - anim.startTime) < anim.duration);
+
         nodes.forEach(n => {
-            let bgColor = '#ffffff', textColor = '#333333', borderColor = '#333333'; let isGlowing = false; let glowColor = '';
+            let bgColor = '#ffffff', textColor = '#333333', borderColor = '#333333'; let isGlowing = false; let glowColor = ''; let isPulsing = false;
+            let successColor = currentIsCycle ? '#00C853' : '#FF9800'; 
+            let successGlow = currentIsCycle ? '#00E676' : '#FFEB3B';
+            let successBorder = currentIsCycle ? '#009624' : '#E65100';
+
             if (selectedNode && selectedNode.id === n.id) bgColor = '#fff59d';
             
             if (currentAnimPath.length > 0) {
@@ -301,62 +396,69 @@
                 if (stepIndex === 0) { 
                     bgColor = '#00E5FF'; textColor = '#000'; borderColor = '#00B8D4'; isGlowing = true; glowColor = '#00E5FF'; 
                 } else if (stepIndex !== -1) { 
-                    bgColor = isSuccessState ? '#FF9800' : '#7e57c2'; 
-                    textColor = '#fff'; borderColor = isSuccessState ? '#E65100' : '#512da8'; 
-                    isGlowing = true; glowColor = isSuccessState ? '#FF9800' : '#b388ff'; 
+                    bgColor = isSuccessState ? successColor : '#5c6bc0'; 
+                    textColor = '#fff'; borderColor = isSuccessState ? successBorder : '#3949ab'; 
+                    isGlowing = true; glowColor = isSuccessState ? successGlow : '#82b1ff'; 
+                    if (!isSuccessState && stepIndex === currentAnimPath.length - 1) isPulsing = true;
                 }
             }
+            
             ctx.beginPath(); ctx.arc(n.x, n.y, RADIUS, 0, 2 * Math.PI); ctx.fillStyle = bgColor;
-            if (isGlowing) { ctx.shadowColor = glowColor; ctx.shadowBlur = 20; }
+            if (isGlowing) { ctx.shadowColor = glowColor; ctx.shadowBlur = isPulsing ? (15 + Math.abs(Math.sin(time / 150)) * 15) : 15; }
             ctx.fill(); ctx.shadowBlur = 0; ctx.lineWidth = 2; ctx.strokeStyle = borderColor; ctx.stroke();
             ctx.fillStyle = textColor; ctx.font = 'bold 16px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(n.id, n.x, n.y);
         });
     }
 
-    function drawTree() {
+    function drawTree(time) {
         if (!currentActiveTree) return;
         treeCtx.clearRect(0, 0, treeCanvas.width, treeCanvas.height);
         treeCtx.save(); treeCtx.translate(treeOffsetX, treeOffsetY); treeCtx.scale(treeScale, treeScale);
         
+        let successColor = currentIsCycle ? '#00E676' : '#FFEB3B';
+
         function renderNodeAndEdges(node) {
             node.children.forEach(child => {
                 let isPathEdge = false;
                 if (currentAnimPath.length > 0) {
-                    let matches = true;
-                    for(let i = 0; i < child.path.length; i++) { if (child.path[i] !== currentAnimPath[i]) matches = false; }
+                    let matches = true; for(let i = 0; i < child.path.length; i++) { if (child.path[i] !== currentAnimPath[i]) matches = false; }
                     if (matches && child.path.length <= currentAnimPath.length) isPathEdge = true;
                 }
 
                 treeCtx.beginPath(); treeCtx.moveTo(node.x, node.y + 15); treeCtx.lineTo(child.x, child.y - 15);
                 if (isPathEdge) { 
-                    treeCtx.strokeStyle = isSuccessState ? '#FFEB3B' : '#b388ff'; 
-                    treeCtx.lineWidth = 4 / treeScale; treeCtx.shadowColor = treeCtx.strokeStyle; treeCtx.shadowBlur = 15; 
-                } else { 
-                    treeCtx.strokeStyle = '#5D4037'; treeCtx.lineWidth = 2 / treeScale; treeCtx.shadowBlur = 0; 
-                }
-                treeCtx.stroke(); treeCtx.shadowBlur = 0; renderNodeAndEdges(child); 
+                    treeCtx.strokeStyle = isSuccessState ? successColor : '#82b1ff'; treeCtx.lineWidth = 4 / treeScale; 
+                    if(!isSuccessState) { treeCtx.setLineDash([10/treeScale, 10/treeScale]); treeCtx.lineDashOffset = -time/20; } 
+                    else { treeCtx.shadowColor = successColor; treeCtx.shadowBlur = 15; }
+                } else { treeCtx.strokeStyle = '#5D4037'; treeCtx.lineWidth = 2 / treeScale; treeCtx.setLineDash([]); treeCtx.shadowBlur = 0; }
+                treeCtx.stroke(); treeCtx.setLineDash([]); treeCtx.shadowBlur = 0; renderNodeAndEdges(child); 
             });
 
-            let nodeType = 'normal'; 
+            let nodeType = 'normal'; let isHead = false;
             if (currentAnimPath.length > 0) {
-                let matchesPrefix = true;
-                for(let i = 0; i < node.path.length; i++) { if (node.path[i] !== currentAnimPath[i]) matchesPrefix = false; }
-                if (matchesPrefix && node.path.length <= currentAnimPath.length) nodeType = (node.path.length === 1) ? 'start' : 'path';
+                let matchesPrefix = true; for(let i = 0; i < node.path.length; i++) { if (node.path[i] !== currentAnimPath[i]) matchesPrefix = false; }
+                if (matchesPrefix && node.path.length <= currentAnimPath.length) { nodeType = (node.path.length === 1) ? 'start' : 'path'; if (node.path.length === currentAnimPath.length) isHead = true; }
             }
-            if (nodeType === 'normal' && node.isSolution) nodeType = 'leaf_success';
+            if (nodeType === 'normal' && node.isSolution) nodeType = node.isCycle ? 'leaf_cycle' : 'leaf_path';
+
+            if (backtrackFlash && node.id === backtrackFlash.nodeId && node.path.length === currentAnimPath.length + 1) {
+                let isTargetNode = true; for(let i=0; i<currentAnimPath.length; i++) { if (node.path[i] !== currentAnimPath[i]) isTargetNode = false;}
+                if(isTargetNode) {
+                    const elapsed = time - backtrackFlash.startTime; const flashDuration = Math.min(400, logicDelay * 1.5);
+                    if (elapsed < flashDuration) { treeCtx.beginPath(); treeCtx.arc(node.x, node.y, 15 + (elapsed/15), 0, 2 * Math.PI); treeCtx.strokeStyle = `rgba(244, 67, 54, ${1 - elapsed/flashDuration})`; treeCtx.lineWidth = 4/treeScale; treeCtx.stroke(); }
+                }
+            }
 
             treeCtx.beginPath(); treeCtx.arc(node.x, node.y, 15, 0, 2 * Math.PI);
             
-            if (nodeType === 'start') { 
-                treeCtx.fillStyle = '#00E5FF'; treeCtx.shadowColor = '#00E5FF'; treeCtx.shadowBlur = 20; 
+            if (nodeType === 'start') { treeCtx.fillStyle = '#00E5FF'; treeCtx.shadowColor = '#00E5FF'; treeCtx.shadowBlur = 20; 
             } else if (nodeType === 'path') { 
-                treeCtx.fillStyle = isSuccessState ? '#FF9800' : '#7e57c2'; 
-                treeCtx.shadowColor = isSuccessState ? '#FF9800' : '#b388ff'; treeCtx.shadowBlur = 20; 
-            } else if (nodeType === 'leaf_success') {
-                treeCtx.fillStyle = '#4CAF50'; 
-            } else {
-                treeCtx.fillStyle = '#3E2723'; 
-            }
+                treeCtx.fillStyle = isSuccessState ? (currentIsCycle ? '#00C853' : '#FF9800') : '#5c6bc0'; 
+                treeCtx.shadowColor = isSuccessState ? successColor : '#82b1ff'; 
+                treeCtx.shadowBlur = (isHead && !isSuccessState) ? (15 + Math.abs(Math.sin(time / 150)) * 15) : 10;
+            } else if (nodeType === 'leaf_cycle') { treeCtx.fillStyle = '#00C853'; treeCtx.shadowBlur = 0; 
+            } else if (nodeType === 'leaf_path') { treeCtx.fillStyle = '#4CAF50'; treeCtx.shadowBlur = 0; 
+            } else { treeCtx.fillStyle = '#3E2723'; treeCtx.shadowBlur = 0; }
             
             treeCtx.fill(); treeCtx.shadowBlur = 0;
             treeCtx.strokeStyle = (nodeType === 'start' || nodeType === 'path') ? '#FFF' : '#795548'; treeCtx.lineWidth = 2 / treeScale; treeCtx.stroke();
@@ -367,11 +469,7 @@
         renderNodeAndEdges(currentActiveTree);
         treeCtx.restore();
     }
-
-    nodes = [ { id: 'A', x: 250, y: 150 }, { id: 'B', x: 500, y: 150 }, { id: 'C', x: 500, y: 350 }, { id: 'D', x: 250, y: 350 } ];
-    edges = [ { u: 'A', v: 'B' }, { u: 'B', v: 'C' }, { u: 'C', v: 'D' }, { u: 'D', v: 'A' }, { u: 'A', v: 'C' } ]; 
-    nextNodeChar = 69;
-    drawGraph();
+    startEngine();
 </script>
 </body>
 </html>
