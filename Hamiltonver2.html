@@ -56,6 +56,7 @@
     <canvas id="graphCanvas" width="750" height="400"></canvas>
     
     <div class="controls" style="margin-top: 15px;">
+        <button class="btn-action" style="background-color: #FF9800;" onclick="generateRandomGraph()">Sinh đồ thị ngẫu nhiên</button>
         <button class="btn-action" onclick="analyzeGraph()">Phân tích đồ thị và tạo cây</button>
         <button class="btn-danger" onclick="clearGraph()">Xóa đồ thị</button>
     </div>
@@ -189,7 +190,40 @@
     }
 
     function clearGraph() { nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null; resetAnalysis(); }
+    function generateRandomGraph() {
+        clearGraph();
     
+    const numNodes = Math.floor(Math.random() * 5) + 6; 
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = 150;
+
+    for (let i = 0; i < numNodes; i++) {
+        const angle = (i / numNodes) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        const nodeId = String.fromCharCode(65 + i); 
+        
+        nodes.push({ id: nodeId, x: x, y: y });
+        nextNodeChar++;
+    }
+    for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+            if (Math.random() < 0.4) {
+                edges.push({ u: nodes[i].id, v: nodes[j].id });
+            }
+        }
+    }
+    for (let i = 0; i < nodes.length; i++) {
+        const u = nodes[i].id;
+        const v = nodes[(i + 1) % nodes.length].id;
+        const exists = edges.some(e => (e.u === u && e.v === v) || (e.u === v && e.v === u));
+        if (!exists) {
+            edges.push({ u: u, v: v });
+        }
+    }
+
+}
     function resetAnalysis() {
         pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null; traceLog = []; 
         isSimulating = false; isSuccessState = false; currentIsCycle = false; backtrackFlash = null;
@@ -469,9 +503,6 @@
         renderNodeAndEdges(currentActiveTree);
         treeCtx.restore();
     }
-    nodes = [ { id: 'A', x: 220, y: 250 }, { id: 'B', x: 350, y: 100 }, { id: 'C', x: 500, y: 250 }, { id: 'D', x: 350, y: 350 }, { id: 'E', x:375, y:250} ];
-    edges = [ { u: 'A', v: 'B' }, { u: 'B', v: 'C' }, { u: 'C', v: 'D' }, { u: 'D', v: 'A' }, { u: 'E', v: 'C' }, { u: 'B',v:'E'},{u:'E',v:'D'} ]; 
-    nextNodeChar = 69;
     startEngine();
 </script>
 </body>
