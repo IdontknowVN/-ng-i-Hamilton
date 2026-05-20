@@ -3,49 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô phỏng Hamilton N6-12</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #1e1e2f; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { background: #2a2a40; padding: 20px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); max-width: 800px; width: 100%; text-align: center; }
-        .controls { margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
-        button { padding: 10px 15px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; }
-        .btn-mode { background-color: #444; color: #fff; }
-        .btn-mode.active { background-color: #4CAF50; color: white; box-shadow: 0 0 10px #4CAF50; }
-        .btn-mode.active-del { background-color: #f44336; color: white; box-shadow: 0 0 10px #f44336; }
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); max-width: 1550px; width: 100%; text-align: center; }
+        .controls { margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; align-items: center; color: #333;}
+        
+        button { padding: 10px 15px; margin: 2px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.3s; border: 1px solid transparent;}
+        .btn-mode { background-color: #e0e0e0; color: #333; border: 1px solid #ccc; }
+        .btn-mode.active { background-color: #4CAF50; color: white; box-shadow: 0 0 10px #4CAF50; border: 1px solid #4CAF50;}
+        .btn-mode.active-del { background-color: #f44336; color: white; box-shadow: 0 0 10px #f44336; border: 1px solid #f44336;}
+        .btn-type { background-color: #2196F3; color: white; box-shadow: 0 0 5px #2196F3; }
         .btn-action { background-color: #9C27B0; color: white; }
         .btn-action:hover { background-color: #7B1FA2; box-shadow: 0 0 10px #9C27B0; }
         .btn-danger { background-color: #f44336; color: white; }
         .btn-danger:hover { background-color: #d32f2f; }
         
-        .speed-control { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; background: #12121a; padding: 10px; border-radius: 6px; border: 1px solid #555; }
-        .speed-control input[type=range] { width: 200px; cursor: pointer; }
-
-        canvas { border: 2px solid #555; border-radius: 5px; background-color: #13111f; margin-top: 10px; width: 100%; max-width: 750px; }
-        #treeCanvas { background-color: #12121a; display: none; cursor: grab; }
+        /* Không gian làm việc song song (Dashboard split screen) */
+        .workspace { display: flex; flex-direction: row; justify-content: center; gap: 20px; width: 100%; margin-top: 15px; flex-wrap: wrap; }
+        .panel { background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; flex: 1; min-width: 450px; max-width: 740px; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; color: #333;}
         
-        #status { margin-top: 15px; font-size: 16px; font-weight: bold; color: #aaa; }
-        .instructions { font-size: 13px; color: #bbb; margin-bottom: 10px; }
-        
-        #nodeOptions { margin-top: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-        .btn-node { background-color: #8D6E63; color: white; } 
-        .btn-node:hover { background-color: #6D4C41; }
-        .btn-node.selected { background-color: #5D4037; box-shadow: 0 0 15px #8D6E63; border: 2px solid #fff; }
+        .speed-control { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 15px 0; background: #ffffff; padding: 10px; border-radius: 6px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; color: #333;}
+        .speed-control input[type=range] { width: 180px; cursor: pointer; }
 
-        #pathDetails { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-height: 200px; overflow-y: auto; width: 100%; border-top: 1px dashed #555; padding-top: 15px; }
-        .btn-path { background-color: #2E7D32; color: white; width: 90%; text-align: center; font-family: monospace; font-size: 15px; } 
-        .btn-path:hover { background-color: #1B5E20; box-shadow: 0 0 10px #4CAF50; }
-        .btn-cycle { background-color: #00838F; color: white; width: 90%; text-align: center; font-family: monospace; font-size: 15px; border: 1px solid #00E5FF; } 
-        .btn-cycle:hover { background-color: #006064; box-shadow: 0 0 10px #00E5FF; }
+        canvas { border: 2px solid #ccc; border-radius: 5px; background-color: #ffffff; width: 100%; height: auto; aspect-ratio: 750 / 400; }
+        #treeCanvas { background-color: #ffffff; cursor: grab; aspect-ratio: 750 / 430; }
+        
+        #status { margin-top: 10px; font-size: 16px; font-weight: bold; color: #666; min-height: 24px; }
+        #nodeOptions { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; width: 100%; }
+        .btn-node { background-color: #a1887f; color: white; padding: 8px 12px; font-size: 13px; } 
+        .btn-node:hover { background-color: #8d6e63; }
+        .btn-node.selected { background-color: #6d4c41; box-shadow: 0 0 15px #a1887f; border: 2px solid #fff; }
+
+        #pathDetails { margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 8px; max-height: 200px; overflow-y: auto; width: 100%; border-top: 1px dashed #ddd; padding-top: 15px; }
+        .btn-path { background-color: #388e3c; color: white; width: 95%; text-align: center; font-family: monospace; font-size: 14px; padding: 8px; border: none; border-radius: 4px; cursor: pointer; } 
+        .btn-path:hover { background-color: #1b5e20; box-shadow: 0 0 10px #4caf50; }
+        .btn-cycle { background-color: #0097a7; color: white; width: 95%; text-align: center; font-family: monospace; font-size: 14px; padding: 8px; border: 1px solid #00acc1; border-radius: 4px; cursor: pointer; } 
+        .btn-cycle:hover { background-color: #006064; box-shadow: 0 0 10px #00e5ff; }
 
         #pathDetails::-webkit-scrollbar { width: 8px; }
-        #pathDetails::-webkit-scrollbar-thumb { background-color: #666; border-radius: 4px; }
+        #pathDetails::-webkit-scrollbar-thumb { background-color: #999; border-radius: 4px; }
+        
+        #rightPanel { display: none; } /* Ẩn bảng cây trạng thái ban đầu, hiện lên khi phân tích xong */
+        .panel-title { margin: 0 0 10px 0; font-size: 18px; color: #e65100; font-weight: bold; width: 100%; text-align: left; border-bottom: 1px solid #ddd; padding-bottom: 5px;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Mô phỏng tìm chu trình và đường đi Hamilton N6-12</h2>
+    <h2>Mô phỏng đồ thị và đường đi Hamilton </h2>
     
     <div class="controls">
+        <button id="btnToggleType" class="btn-type" onclick="toggleGraphType()">Đồ thị: VÔ HƯỚNG</button>
+        <div style="border-left: 1px solid #ccc; height: 25px; margin: 0 10px;"></div>
         <span>Chế độ: </span>
         <button id="btnNode" class="btn-mode active" onclick="setMode('node')">Thêm đỉnh</button>
         <button id="btnEdge" class="btn-mode" onclick="setMode('edge')">Thêm cạnh</button>
@@ -53,29 +63,37 @@
         <button id="btnDelEdge" class="btn-mode" onclick="setMode('del_edge')">Xóa cạnh</button>
     </div>
 
-    <canvas id="graphCanvas" width="750" height="400"></canvas>
-    
-    <div class="controls" style="margin-top: 15px;">
-        <button class="btn-action" style="background-color: #FF9800;" onclick="generateRandomGraph()">Sinh đồ thị ngẫu nhiên</button>
-        <button class="btn-action" onclick="analyzeGraph()">Phân tích đồ thị và tạo cây</button>
-        <button class="btn-danger" onclick="clearGraph()">Xóa đồ thị</button>
-    </div>
+    <div class="workspace">
+        
+        <div class="panel" id="leftPanel">
+            <div class="panel-title">Không gian đồ thị</div>
+            <canvas id="graphCanvas" width="750" height="400"></canvas>
+            
+            <div class="controls" style="margin-top: 15px; width: 100%;">
+                <button class="btn-action" style="background-color: #FF9800;" onclick="generateRandomGraph()">Sinh ngẫu nhiên</button>
+                <button class="btn-action" onclick="analyzeGraph()">Phân tích Hamilton</button>
+                <button class="btn-danger" onclick="clearGraph()">Xóa đồ thị</button>
+            </div>
 
-    <div class="speed-control">
-        <span style="font-weight: bold; color: #FF9800;">Tốc độ dò tìm:</span>
-        <span style="font-size: 12px; color: #aaa;">Chậm</span>
-        <input type="range" id="speedSlider" min="1" max="100" value="50">
-        <span style="font-size: 12px; color: #aaa;">Nhanh</span>
-    </div>
+            <div class="speed-control">
+                <span style="font-weight: bold; color: #e65100; font-size: 13px;">Tốc độ:</span>
+                <input range" id="speedSlider" min="1" max="100" value="50">
+            </div>
 
-    <div id="status">Vẽ, chỉnh sửa đồ thị và bấm phân tích...</div>
-    <div id="nodeOptions"></div>
-    <div id="pathDetails"></div>
-    
-    <p id="treeInstructions" style="display:none; color:#FF9800; font-size:14px; margin-top:15px;">
-        Cuộn chuột để thu/phóng cây | Bấm giữ và kéo để di chuyển
-    </p>
-    <canvas id="treeCanvas" width="750" height="350"></canvas>
+            <div id="status">Hãy vẽ hoặc sinh đồ thị ngẫu nhiên, sau đó bấm phân tích...</div>
+            <div id="nodeOptions"></div>
+            <div id="pathDetails"></div>
+        </div>
+        
+        <div class="panel" id="rightPanel">
+            <div class="panel-title">Cây trạng thái thuật toán</div>
+            <p id="treeInstructions" style="color:#e65100; font-size:13px; margin: 0 0 10px 0; width: 100%; text-align: left;">
+                Cuộn chuột để phóng to, thu nhỏ cây | Giữ chuột trái và kéo để dịch chuyển cây
+            </p>
+            <canvas id="treeCanvas" width="750" height="430"></canvas>
+        </div>
+        
+    </div>
 </div>
 
 <script>
@@ -89,8 +107,10 @@
     const pathDetailsDiv = document.getElementById('pathDetails');
     const treeInstructions = document.getElementById('treeInstructions');
     const speedSlider = document.getElementById('speedSlider');
+
     let nodes = []; let edges = []; let nextNodeChar = 65; const RADIUS = 20;
     let mode = 'node'; let selectedNode = null; let draggingNode = null;
+    let isDirected = false; // Mặc định vô hướng
     let pathsByNode = {}; let treeByNode = {}; let currentActiveTree = null;
     let isSimulating = false;
     let traceLog = []; 
@@ -103,7 +123,14 @@
     let uiAnimations = [];
     let treeScale = 1; let treeOffsetX = 0; let treeOffsetY = 0;
     let isDraggingTree = false; let dragStartX = 0; let dragStartY = 0;
+
     function startEngine() { requestAnimationFrame(globalRenderLoop); }
+
+    function toggleGraphType() {
+        isDirected = !isDirected;
+        document.getElementById('btnToggleType').innerText = isDirected ? "Loại đồ thị: CÓ HƯỚNG" : "Loại đồ thị: VÔ HƯỚNG";
+        resetAnalysis();
+    }
 
     function globalRenderLoop(currentTime) {
         if (isSimulating && !isSuccessState && (currentTime - lastLogicTime > logicDelay)) {
@@ -123,7 +150,7 @@
                         statusDiv.style.color = "#00E676";
                     } else {
                         statusDiv.innerText = `Đã tìm thấy đường đi Hamilton!`; 
-                        statusDiv.style.color = "#FFEB3B";
+                        statusDiv.style.color = "#FF9800"; // Đổi màu thành cam đậm cho dễ nhìn trên nền sáng
                     }
                 } else {
                     statusDiv.innerText = `Đang dò: ${currentAnimPath.join(' ➔ ')}`; 
@@ -134,8 +161,53 @@
         drawGraph(currentTime); drawTree(currentTime);
         requestAnimationFrame(globalRenderLoop);
     }
+
     speedSlider.addEventListener('input', (e) => { logicDelay = 1000 - ((parseInt(e.target.value) - 1) * 9.89); });
     function addUIAnim(animObj) { animObj.startTime = performance.now(); uiAnimations.push(animObj); }
+
+    // Tính toán tọa độ chuẩn hóa tỉ lệ co giãn thực tế của canvas CSS
+    function getMousePos(cvs, e) { 
+        const rect = cvs.getBoundingClientRect(); 
+        return { 
+            x: (e.clientX - rect.left) * (cvs.width / rect.width), 
+            y: (e.clientY - rect.top) * (cvs.height / rect.height) 
+        }; 
+    }
+
+    function drawArrow(context, fromX, fromY, toX, toY, color, width, isDashed = false, time = 0) {
+        const headLength = 15;
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+        
+        const startX = fromX + RADIUS * Math.cos(angle);
+        const startY = fromY + RADIUS * Math.sin(angle);
+        const destX = toX - RADIUS * Math.cos(angle);
+        const destY = toY - RADIUS * Math.sin(angle);
+
+        context.beginPath();
+        context.strokeStyle = color;
+        context.lineWidth = width;
+        if(isDashed) {
+            context.setLineDash([10, 10]);
+            context.lineDashOffset = -time / 20;
+        } else {
+            context.setLineDash([]);
+        }
+        context.moveTo(startX, startY);
+        context.lineTo(destX, destY);
+        context.stroke();
+        context.setLineDash([]);
+
+        if (isDirected) {
+            context.beginPath();
+            context.fillStyle = color;
+            context.moveTo(destX, destY);
+            context.lineTo(destX - headLength * Math.cos(angle - Math.PI / 6), destY - headLength * Math.sin(angle - Math.PI / 6));
+            context.lineTo(destX - headLength * Math.cos(angle + Math.PI / 6), destY - headLength * Math.sin(angle + Math.PI / 6));
+            context.closePath();
+            context.fill();
+        }
+    }
+
     canvas.addEventListener('mousedown', (e) => {
         resetAnalysis(); 
         const pos = getMousePos(canvas, e); const clickedNode = getNodeAt(pos.x, pos.y);
@@ -155,11 +227,11 @@
                 } else if (selectedNode.id !== clickedNode.id) {
                     const u = selectedNode; const v = clickedNode;
                     if (mode === 'edge') {
-                        const exists = edges.some(edge => (edge.u === u.id && edge.v === v.id) || (edge.u === v.id && edge.v === u.id));
+                        const exists = edges.some(edge => edge.u === u.id && edge.v === v.id);
                         if (!exists) { edges.push({ u: u.id, v: v.id }); addUIAnim({type: 'add_edge', u: u, v: v, duration: 600}); }
                     } else if (mode === 'del_edge') {
                         const initLength = edges.length;
-                        edges = edges.filter(edge => !((edge.u === u.id && edge.v === v.id) || (edge.u === v.id && edge.v === u.id)));
+                        edges = edges.filter(edge => !(edge.u === u.id && edge.v === v.id));
                         if (edges.length < initLength) addUIAnim({type: 'del_edge', u: u, v: v, duration: 600});
                     }
                     selectedNode = null; 
@@ -178,8 +250,8 @@
 
     treeCanvas.addEventListener('mousedown', (e) => { isDraggingTree = true; dragStartX = e.clientX - treeOffsetX; dragStartY = e.clientY - treeOffsetY; treeCanvas.style.cursor = 'grabbing'; });
     treeCanvas.addEventListener('mousemove', (e) => { if (!isDraggingTree) return; treeOffsetX = e.clientX - dragStartX; treeOffsetY = e.clientY - dragStartY; });
-    treeCanvas.addEventListener('mouseup', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
-    treeCanvas.addEventListener('mouseleave', () => { isDraggingTree = false; treeCanvas.style.cursor = 'grab'; });
+    treeCanvas.addEventListener('mouseup', () => { treeCanvas.style.cursor = 'grab'; isDraggingTree = false; });
+    treeCanvas.addEventListener('mouseleave', () => { treeCanvas.style.cursor = 'grab'; isDraggingTree = false; });
     treeCanvas.addEventListener('wheel', (e) => { e.preventDefault(); const zoomIntensity = 0.002; treeScale = Math.max(0.1, Math.min(treeScale - (e.deltaY * zoomIntensity), 5)); });
 
     function setMode(newMode) { 
@@ -190,49 +262,51 @@
     }
 
     function clearGraph() { nodes = []; edges = []; nextNodeChar = 65; selectedNode = null; draggingNode = null; resetAnalysis(); }
+    
     function generateRandomGraph() {
         clearGraph();
-    
-    const numNodes = Math.floor(Math.random() * 5) + 6; 
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = 150;
+        const numNodes = Math.floor(Math.random() * 4) + 4; 
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 130;
 
-    for (let i = 0; i < numNodes; i++) {
-        const angle = (i / numNodes) * 2 * Math.PI;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        const nodeId = String.fromCharCode(65 + i); 
+        for (let i = 0; i < numNodes; i++) {
+            const angle = (i / numNodes) * 2 * Math.PI;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            const nodeId = String.fromCharCode(65 + i); 
+            nodes.push({ id: nodeId, x: x, y: y });
+            nextNodeChar++;
+        }
         
-        nodes.push({ id: nodeId, x: x, y: y });
-        nextNodeChar++;
-    }
-    for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-            if (Math.random() < 0.4) {
-                edges.push({ u: nodes[i].id, v: nodes[j].id });
+        // Tạo một vòng chu trình Hamilton gốc cố định để đảm bảo bài toán có nghiệm
+        for (let i = 0; i < nodes.length; i++) {
+            edges.push({ u: nodes[i].id, v: nodes[(i + 1) % nodes.length].id });
+        }
+        
+        // Thêm một số cạnh ngẫu nhiên ngẫu hứng ngẫu nhiên khác
+        for (let i = 0; i < nodes.length; i++) {
+            for (let j = 0; j < nodes.length; j++) {
+                if (i !== j && Math.random() < 0.25) {
+                    const exists = edges.some(e => e.u === nodes[i].id && e.v === nodes[j].id);
+                    if (!exists) {
+                        if (isDirected || i < j) {
+                            edges.push({ u: nodes[i].id, v: nodes[j].id });
+                        }
+                    }
+                }
             }
         }
     }
-    for (let i = 0; i < nodes.length; i++) {
-        const u = nodes[i].id;
-        const v = nodes[(i + 1) % nodes.length].id;
-        const exists = edges.some(e => (e.u === u && e.v === v) || (e.u === v && e.v === u));
-        if (!exists) {
-            edges.push({ u: u, v: v });
-        }
-    }
 
-}
     function resetAnalysis() {
         pathsByNode = {}; treeByNode = {}; currentAnimPath = []; currentActiveTree = null; traceLog = []; 
         isSimulating = false; isSuccessState = false; currentIsCycle = false; backtrackFlash = null;
         nodeOptionsDiv.innerHTML = ''; pathDetailsDiv.innerHTML = '';
-        treeCanvas.style.display = 'none'; treeInstructions.style.display = 'none';
-        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng phân tích lại."; statusDiv.style.color = "#aaa";
+        document.getElementById('rightPanel').style.display = 'none'; // Ẩn panel bên phải đi khi đồ thị thay đổi
+        statusDiv.innerText = "Đồ thị đã thay đổi. Vui lòng nhấn phân tích."; statusDiv.style.color = "#aaa";
     }
     
-    function getMousePos(cvs, e) { const rect = cvs.getBoundingClientRect(); return { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
     function getNodeAt(x, y) { return nodes.find(n => Math.hypot(n.x - x, n.y - y) <= RADIUS); }
     function getNodeById(id) { return nodes.find(n => n.id === id); }
 
@@ -240,18 +314,21 @@
         if (nodes.length === 0) { statusDiv.innerText = "Vui lòng vẽ đồ thị trước!"; return; }
         resetAnalysis();
         const adj = {}; nodes.forEach(n => adj[n.id] = []);
-        edges.forEach(e => { if(adj[e.u] && adj[e.v]) { adj[e.u].push(e.v); adj[e.v].push(e.u); } });
+        edges.forEach(e => { 
+            if(adj[e.u] && adj[e.v]) { 
+                adj[e.u].push(e.v); 
+                if(!isDirected) adj[e.v].push(e.u);
+            } 
+        });
 
         function buildTree(pathArray) {
             let nodeData = { id: pathArray[pathArray.length - 1], path: [...pathArray], children: [], isSolution: false, isCycle: false };
-            
             if (pathArray.length === nodes.length) { 
                 nodeData.isSolution = true; 
                 let firstNode = pathArray[0];
                 let lastNode = pathArray[pathArray.length - 1];
                 let isCycle = adj[lastNode].includes(firstNode);
                 nodeData.isCycle = isCycle;
-                
                 pathsByNode[firstNode].push({ path: [...pathArray], isCycle: isCycle }); 
                 return nodeData; 
             }
@@ -274,12 +351,12 @@
         });
 
         const validNodes = Object.keys(pathsByNode).filter(k => pathsByNode[k].length > 0);
-        if (validNodes.length === 0) { statusDiv.innerText = "Không có đường đi/chu trình nào!"; statusDiv.style.color = "#f44336"; } 
+        if (validNodes.length === 0) { statusDiv.innerText = "Không có đường đi/chu trình nào thỏa mãn!"; statusDiv.style.color = "#f44336"; } 
         else {
-            statusDiv.innerText = `Bấm vào một đỉnh bên dưới để xem chi tiết`; statusDiv.style.color = "#4CAF50";
+            statusDiv.innerText = `Bấm chọn một đỉnh xuất phát bên dưới để xem cây trạng thái song song:`; statusDiv.style.color = "#4CAF50";
             validNodes.forEach(nodeId => {
                 const btn = document.createElement('button'); btn.className = 'btn-node';
-                btn.innerText = `Đỉnh ${nodeId} (${pathsByNode[nodeId].length} khả năng)`;
+                btn.innerText = `Đỉnh ${nodeId} (${pathsByNode[nodeId].length} kết quả)`;
                 btn.onclick = () => showPathsAndTreeForNode(nodeId, btn);
                 nodeOptionsDiv.appendChild(btn);
             });
@@ -288,7 +365,7 @@
 
     function calculateTreeLayout(root) {
         function calcLeaves(node) { if (node.children.length === 0) node.leafCount = 1; else node.leafCount = node.children.reduce((sum, child) => sum + calcLeaves(child), 0); return node.leafCount; }
-        const virtualWidth = Math.max(treeCanvas.width, calcLeaves(root) * 60); const LEVEL_HEIGHT = 80;
+        const virtualWidth = Math.max(treeCanvas.width, calcLeaves(root) * 55); const LEVEL_HEIGHT = 80;
         function assignCoords(node, left, right, y) {
             node.x = (left + right) / 2; node.y = y; let currentLeft = left;
             node.children.forEach(child => { let childWidth = (child.leafCount / node.leafCount) * (right - left); assignCoords(child, currentLeft, currentLeft + childWidth, y + LEVEL_HEIGHT); currentLeft += childWidth; });
@@ -300,23 +377,24 @@
 
     function showPathsAndTreeForNode(nodeId, clickedBtn) {
         document.querySelectorAll('.btn-node').forEach(b => b.classList.remove('selected')); clickedBtn.classList.add('selected');
-        treeCanvas.style.display = 'block'; treeInstructions.style.display = 'block';
+        
+        // Kích hoạt hiển thị panel cây bên phải song song trên cùng màn hình
+        document.getElementById('rightPanel').style.display = 'flex';
+        
         currentActiveTree = treeByNode[nodeId]; calculateTreeLayout(currentActiveTree);
         currentAnimPath = []; animStep = 0; traceLog = []; isSimulating = false; isSuccessState = false; currentIsCycle = false;
 
-        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#fff;">Kết quả từ <span style="color:#00E5FF">${nodeId}</span> (Click để mô phỏng):</h4>`;
+        pathDetailsDiv.innerHTML = `<h4 style="margin:5px; color:#333;">Danh sách lời giải từ gốc <span style="color:#00acc1">${nodeId}</span> (Click để chạy mô phỏng):</h4>`;
         
         pathsByNode[nodeId].forEach((pathObj, index) => {
             const btn = document.createElement('button'); 
-            
             if (pathObj.isCycle) {
                 btn.className = 'btn-cycle';
-                btn.innerHTML = `<strong>Chu trình #${index + 1}:</strong> <span style="color:#00E5FF">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')} ➔ <span style="color:#00E5FF">${pathObj.path[0]}</span>`;
+                btn.innerHTML = `<strong>Chu trình #${index + 1}:</strong> <span style="color:#00e5ff">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')} ➔ <span style="color:#00e5ff">${pathObj.path[0]}</span>`;
             } else {
                 btn.className = 'btn-path';
-                btn.innerHTML = `<strong>Đường đi #${index + 1}:</strong> <span style="color:#00E5FF">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')}`;
+                btn.innerHTML = `<strong>Đường đi #${index + 1}:</strong> <span style="color:#00e5ff">${pathObj.path[0]}</span> ➔ ${pathObj.path.slice(1).join(' ➔ ')}`;
             }
-            
             btn.onclick = () => playAnimation(pathObj.path);
             pathDetailsDiv.appendChild(btn);
         });
@@ -325,15 +403,18 @@
     function generateExecutionTrace(startNodeId, targetPath) {
         let trace = []; let tempPath = []; let found = false;
         const adj = {}; nodes.forEach(n => adj[n.id] = []);
-        edges.forEach(e => { if(adj[e.u] && adj[e.v]) { adj[e.u].push(e.v); adj[e.v].push(e.u); } });
+        edges.forEach(e => { 
+            if(adj[e.u] && adj[e.v]) { 
+                adj[e.u].push(e.v); 
+                if(!isDirected) adj[e.v].push(e.u); 
+            } 
+        });
 
         function dfs(nodeId) {
             if (found) return;
             tempPath.push(nodeId); 
-            
             let isComplete = tempPath.length === targetPath.length;
             let isCycle = isComplete ? adj[tempPath[tempPath.length - 1]].includes(tempPath[0]) : false;
-            
             trace.push({ path: [...tempPath], action: 'VISIT', isComplete: isComplete, isCycle: isCycle });
 
             if (isComplete) {
@@ -353,47 +434,48 @@
         traceLog = generateExecutionTrace(targetPath[0], targetPath);
         animStep = 0; backtrackFlash = null; lastLogicTime = performance.now();
         isSimulating = true; 
-        statusDiv.innerText = `Đang dò đường...`; statusDiv.style.color = "#82b1ff";
+        statusDiv.innerText = `Đang dò đường thuật toán DFS...`; statusDiv.style.color = "#2196f3"; // Đổi sang xanh lam đậm cho dễ nhìn
     }
 
     function drawGraph(time) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        ctx.lineWidth = 2; ctx.strokeStyle = '#cccccc'; ctx.setLineDash([]);
-        edges.forEach(edge => { const u = getNodeById(edge.u); const v = getNodeById(edge.v); if(u && v) { ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(v.x, v.y); ctx.stroke(); } });
+        // Vẽ toàn bộ các cạnh nền
+        edges.forEach(edge => { 
+            const u = getNodeById(edge.u); const v = getNodeById(edge.v); 
+            if(u && v) drawArrow(ctx, u.x, u.y, v.x, v.y, '#aaa', 2); // Đổi sang xám đậm cho nền sáng
+        });
         
         uiAnimations.forEach(anim => {
             if (anim.type.includes('edge')) {
                 const elapsed = time - anim.startTime;
                 if (elapsed < anim.duration) {
-                    ctx.beginPath(); ctx.moveTo(anim.u.x, anim.u.y); ctx.lineTo(anim.v.x, anim.v.y);
-                    ctx.lineWidth = 6; ctx.strokeStyle = anim.type === 'add_edge' ? `rgba(76, 175, 80, ${1-(elapsed/anim.duration)})` : `rgba(244, 67, 54, ${1-(elapsed/anim.duration)})`;
-                    if(anim.type === 'del_edge') ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]);
+                    const color = anim.type === 'add_edge' ? `rgba(76, 175, 80, ${1-(elapsed/anim.duration)})` : `rgba(244, 67, 54, ${1-(elapsed/anim.duration)})`;
+                    drawArrow(ctx, anim.u.x, anim.u.y, anim.v.x, anim.v.y, color, 6, anim.type === 'del_edge');
                 }
             }
         });
 
+        // Đổ màu highlight đường đi đang duyệt
         if (currentAnimPath.length > 1) {
-            let successColor = currentIsCycle ? '#00E676' : '#FFEB3B'; 
+            let successColorCycle = '#00E676'; // Màu chu trình (xanh lá sáng)
+            let successColorPath = '#FF9800'; // Màu đường đi (cam đậm)
+            let successColor = currentIsCycle ? successColorCycle : successColorPath;
+            let pathColor = isSuccessState ? successColor : '#2196f3'; // Đổi sang xanh lam đậm khi dò đường
+            let lineWidth = isSuccessState ? 5 : 4;
             
-            ctx.lineWidth = isSuccessState ? 5 : 4; 
-            ctx.strokeStyle = isSuccessState ? successColor : '#82b1ff'; 
+            if (isSuccessState) { ctx.shadowColor = successColor; ctx.shadowBlur = 10; }
             
-            if (!isSuccessState) { ctx.setLineDash([10, 10]); ctx.lineDashOffset = -time / 20; 
-            } else { ctx.shadowColor = successColor; ctx.shadowBlur = 10; }
-            
-            ctx.beginPath();
-            const firstNode = getNodeById(currentAnimPath[0]);
-            if(firstNode) ctx.moveTo(firstNode.x, firstNode.y);
-            for (let i = 1; i < currentAnimPath.length; i++) {
-                const n = getNodeById(currentAnimPath[i]); if(n) ctx.lineTo(n.x, n.y);
+            for (let i = 0; i < currentAnimPath.length - 1; i++) {
+                const u = getNodeById(currentAnimPath[i]); const v = getNodeById(currentAnimPath[i+1]);
+                if (u && v) drawArrow(ctx, u.x, u.y, v.x, v.y, pathColor, lineWidth, !isSuccessState, time);
             }
-            
             if (isSuccessState && currentIsCycle) {
-                if(firstNode) ctx.lineTo(firstNode.x, firstNode.y);
+                const firstNode = getNodeById(currentAnimPath[0]);
+                const lastNode = getNodeById(currentAnimPath[currentAnimPath.length - 1]);
+                if (firstNode && lastNode) drawArrow(ctx, lastNode.x, lastNode.y, firstNode.x, firstNode.y, pathColor, lineWidth, false, time);
             }
-            
-            ctx.stroke(); ctx.setLineDash([]); ctx.shadowBlur = 0;
+            ctx.shadowBlur = 0;
         }
 
         if (backtrackFlash) {
@@ -417,22 +499,28 @@
         });
         uiAnimations = uiAnimations.filter(anim => (time - anim.startTime) < anim.duration);
 
+        // Vẽ vẽ đỉnh đồ thị
         nodes.forEach(n => {
             let bgColor = '#ffffff', textColor = '#333333', borderColor = '#333333'; let isGlowing = false; let glowColor = ''; let isPulsing = false;
-            let successColor = currentIsCycle ? '#00C853' : '#FF9800'; 
-            let successGlow = currentIsCycle ? '#00E676' : '#FFEB3B';
-            let successBorder = currentIsCycle ? '#009624' : '#E65100';
+            let successColorCycle = '#00C853'; // Xanh lá sáng
+            let successColorPath = '#FF9800'; // Cam đậm
+            let successGlowCycle = '#00E676';
+            let successGlowPath = '#FFEB3B'; // Vàng nhạt
+            let successBorderCycle = '#009624';
+            let successBorderPath = '#E65100';
 
-            if (selectedNode && selectedNode.id === n.id) bgColor = '#fff59d';
-            
+            let successColor = currentIsCycle ? successColorCycle : successColorPath; 
+            let successGlow = currentIsCycle ? successGlowCycle : successGlowPath;
+            let successBorder = currentIsCycle ? successBorderCycle : successBorderPath;
+
+            if (selectedNode && selectedNode.id === n.id) bgColor = '#fffde7'; // Vàng nhạt hơn cho nền sáng
             if (currentAnimPath.length > 0) {
                 const stepIndex = currentAnimPath.indexOf(n.id);
                 if (stepIndex === 0) { 
-                    bgColor = '#00E5FF'; textColor = '#000'; borderColor = '#00B8D4'; isGlowing = true; glowColor = '#00E5FF'; 
+                    bgColor = '#00acc1'; textColor = '#fff'; borderColor = '#0097a7'; isGlowing = true; glowColor = '#00acc1'; // Xanh lơ đậm hơn
                 } else if (stepIndex !== -1) { 
-                    bgColor = isSuccessState ? successColor : '#5c6bc0'; 
-                    textColor = '#fff'; borderColor = isSuccessState ? successBorder : '#3949ab'; 
-                    isGlowing = true; glowColor = isSuccessState ? successGlow : '#82b1ff'; 
+                    bgColor = isSuccessState ? successColor : '#303f9f'; textColor = '#fff'; borderColor = isSuccessState ? successBorder : '#283593'; // Đổi sang xanh lam đậm hơn
+                    isGlowing = true; glowColor = isSuccessState ? successGlow : '#2196f3'; 
                     if (!isSuccessState && stepIndex === currentAnimPath.length - 1) isPulsing = true;
                 }
             }
@@ -449,7 +537,9 @@
         treeCtx.clearRect(0, 0, treeCanvas.width, treeCanvas.height);
         treeCtx.save(); treeCtx.translate(treeOffsetX, treeOffsetY); treeCtx.scale(treeScale, treeScale);
         
-        let successColor = currentIsCycle ? '#00E676' : '#FFEB3B';
+        let successColorCycle = '#00E676';
+        let successColorPath = '#FF9800';
+        let successColor = currentIsCycle ? successColorCycle : successColorPath;
 
         function renderNodeAndEdges(node) {
             node.children.forEach(child => {
@@ -461,10 +551,10 @@
 
                 treeCtx.beginPath(); treeCtx.moveTo(node.x, node.y + 15); treeCtx.lineTo(child.x, child.y - 15);
                 if (isPathEdge) { 
-                    treeCtx.strokeStyle = isSuccessState ? successColor : '#82b1ff'; treeCtx.lineWidth = 4 / treeScale; 
+                    treeCtx.strokeStyle = isSuccessState ? successColor : '#2196f3'; treeCtx.lineWidth = 4 / treeScale; 
                     if(!isSuccessState) { treeCtx.setLineDash([10/treeScale, 10/treeScale]); treeCtx.lineDashOffset = -time/20; } 
                     else { treeCtx.shadowColor = successColor; treeCtx.shadowBlur = 15; }
-                } else { treeCtx.strokeStyle = '#5D4037'; treeCtx.lineWidth = 2 / treeScale; treeCtx.setLineDash([]); treeCtx.shadowBlur = 0; }
+                } else { treeCtx.strokeStyle = '#8d6e63'; treeCtx.lineWidth = 2 / treeScale; treeCtx.setLineDash([]); treeCtx.shadowBlur = 0; } // Đổi sang nâu đậm cho cây nền sáng
                 treeCtx.stroke(); treeCtx.setLineDash([]); treeCtx.shadowBlur = 0; renderNodeAndEdges(child); 
             });
 
@@ -483,28 +573,28 @@
                 }
             }
 
-            treeCtx.beginPath(); treeCtx.arc(node.x, node.y, 15, 0, 2 * Math.PI);
+            treeCtx.beginPath(); treeCtx.arc(node.x, node.y, 14, 0, 2 * Math.PI);
             
-            if (nodeType === 'start') { treeCtx.fillStyle = '#00E5FF'; treeCtx.shadowColor = '#00E5FF'; treeCtx.shadowBlur = 20; 
+            if (nodeType === 'start') { treeCtx.fillStyle = '#00acc1'; treeCtx.shadowColor = '#00acc1'; treeCtx.shadowBlur = 20; 
             } else if (nodeType === 'path') { 
-                treeCtx.fillStyle = isSuccessState ? (currentIsCycle ? '#00C853' : '#FF9800') : '#5c6bc0'; 
-                treeCtx.shadowColor = isSuccessState ? successColor : '#82b1ff'; 
+                treeCtx.fillStyle = isSuccessState ? (currentIsCycle ? '#00C853' : '#FF9800') : '#303f9f'; // Đổi màu cam đậm/xanh lam đậm
+                treeCtx.shadowColor = isSuccessState ? successColor : '#2196f3'; 
                 treeCtx.shadowBlur = (isHead && !isSuccessState) ? (15 + Math.abs(Math.sin(time / 150)) * 15) : 10;
             } else if (nodeType === 'leaf_cycle') { treeCtx.fillStyle = '#00C853'; treeCtx.shadowBlur = 0; 
             } else if (nodeType === 'leaf_path') { treeCtx.fillStyle = '#4CAF50'; treeCtx.shadowBlur = 0; 
-            } else { treeCtx.fillStyle = '#3E2723'; treeCtx.shadowBlur = 0; }
+            } else { treeCtx.fillStyle = '#a1887f'; treeCtx.shadowBlur = 0; } // Đổi sang nâu nhạt cho cây nền sáng
             
             treeCtx.fill(); treeCtx.shadowBlur = 0;
-            treeCtx.strokeStyle = (nodeType === 'start' || nodeType === 'path') ? '#FFF' : '#795548'; treeCtx.lineWidth = 2 / treeScale; treeCtx.stroke();
-            treeCtx.fillStyle = (nodeType === 'start' || nodeType === 'path') ? '#000' : '#FFF';
-            treeCtx.font = 'bold 14px Arial'; treeCtx.textAlign = 'center'; treeCtx.textBaseline = 'middle'; treeCtx.fillText(node.id, node.x, node.y);
+            treeCtx.strokeStyle = (nodeType === 'start' || nodeType === 'path') ? '#FFF' : '#8d6e63'; treeCtx.lineWidth = 2 / treeScale; treeCtx.stroke();
+            treeCtx.fillStyle = (nodeType === 'start' || nodeType === 'path') ? '#fff' : '#fff';
+            treeCtx.font = 'bold 13px Arial'; treeCtx.textAlign = 'center'; treeCtx.textBaseline = 'middle'; treeCtx.fillText(node.id, node.x, node.y);
         }
 
         renderNodeAndEdges(currentActiveTree);
         treeCtx.restore();
     }
+    
     startEngine();
 </script>
 </body>
 </html>
-
